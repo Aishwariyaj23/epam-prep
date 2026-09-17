@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+  /* Baseline the hosted version supplies; baked in here so this file is self-contained. */
+  :root{
+    color-scheme: light dark;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  html{ -webkit-text-size-adjust:100%; }
+  body{ margin:0; font:14px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background:#faf9f7; }
+  img{ max-width:100%; }
+  [hidden]{ display:none !important; }
+</style>
+<title>Mock Panel Runsheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=JetBrains+Mono:wght@400;600&display=swap">
+
+<style>
+  :root{
+    --paper:#F4F3F0;
+    --surface:#FFFFFF;
+    --surface-2:#EAE8E3;
+    --ink:#1A1817;
+    --ink-2:#4C4843;
+    --muted:#807A72;
+    --line:#DEDBD5;
+    --line-2:#C7C2BA;
+    --accent:#7A3B1F;
+    --accent-soft:#F2E6DE;
+    --good:#2F6B44;
+    --good-soft:#E2EFE6;
+    --bad:#A03226;
+    --bad-soft:#F7E4E1;
+    --warn:#8A6410;
+    --warn-soft:#F4EBD5;
+    --code-bg:#211D1A;
+    --code-fg:#E2DCD4;
+    --code-kw:#D9A066;
+    --code-str:#A8C08A;
+    --code-com:#7C7268;
+    --code-ann:#C79BC0;
+    --code-num:#8FB7C4;
+    --shadow:0 1px 2px rgba(26,24,23,.06), 0 6px 20px -12px rgba(26,24,23,.25);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#161413;
+      --surface:#1F1D1B;
+      --surface-2:#282523;
+      --ink:#EDE9E4;
+      --ink-2:#BAB4AC;
+      --muted:#8E877E;
+      --line:#302C29;
+      --line-2:#413C38;
+      --accent:#D98B5F;
+      --accent-soft:#33241B;
+      --good:#6CC08C;
+      --good-soft:#1C3325;
+      --bad:#E08A7C;
+      --bad-soft:#36201D;
+      --warn:#D6AB55;
+      --warn-soft:#382E15;
+      --code-bg:#100E0D;
+      --shadow:0 1px 2px rgba(0,0,0,.45), 0 6px 20px -12px rgba(0,0,0,.7);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#161413;
+    --surface:#1F1D1B;
+    --surface-2:#282523;
+    --ink:#EDE9E4;
+    --ink-2:#BAB4AC;
+    --muted:#8E877E;
+    --line:#302C29;
+    --line-2:#413C38;
+    --accent:#D98B5F;
+    --accent-soft:#33241B;
+    --good:#6CC08C;
+    --good-soft:#1C3325;
+    --bad:#E08A7C;
+    --bad-soft:#36201D;
+    --warn:#D6AB55;
+    --warn-soft:#382E15;
+    --code-bg:#100E0D;
+    --shadow:0 1px 2px rgba(0,0,0,.45), 0 6px 20px -12px rgba(0,0,0,.7);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:"Newsreader",Georgia,serif;font-size:16px;line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{font-family:"Archivo","Helvetica Neue",Arial,sans-serif;margin:0;text-wrap:balance;letter-spacing:-.012em;}
+  .mono{font-family:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;}
+
+  header.top{
+    position:sticky;top:env(safe-area-inset-top, 0px);z-index:40;
+    background:color-mix(in srgb, var(--paper) 93%, transparent);
+    backdrop-filter:blur(10px);border-bottom:1px solid var(--line);
+  }
+  .top-in{max-width:960px;margin:0 auto;padding:12px 20px 0;}
+  .brandrow{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 16px;}
+  .brandrow h1{font-size:19px;font-weight:700;}
+  .foryou{
+    font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.11em;text-transform:uppercase;
+    background:var(--bad-soft);color:var(--bad);padding:3px 8px;border-radius:4px;font-weight:600;
+  }
+  .spacer{flex:1 1 auto;}
+  .clockbox{display:flex;align-items:center;gap:8px;padding:10px 0 12px;flex-wrap:wrap;}
+  .clock{
+    font-family:"JetBrains Mono",monospace;font-size:26px;font-weight:600;
+    font-variant-numeric:tabular-nums;color:var(--ink);min-width:88px;letter-spacing:-.02em;
+  }
+  .clock.over{color:var(--bad);}
+  .ghost{
+    font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+    border:1px solid var(--line-2);background:var(--surface);color:var(--ink-2);
+    padding:7px 12px;border-radius:6px;cursor:pointer;font-weight:600;
+  }
+  .ghost:hover{border-color:var(--accent);color:var(--accent);}
+  .ghost.primary{background:var(--accent);border-color:var(--accent);color:var(--paper);}
+  .ghost:focus-visible,.tab:focus-visible,summary:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  .seglabel{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--muted);letter-spacing:.04em;}
+
+  nav.tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;margin:0 -20px;padding:0 20px;}
+  nav.tabs::-webkit-scrollbar{display:none;}
+  .tab{
+    font-family:"Archivo",sans-serif;font-size:13px;font-weight:600;
+    background:none;border:0;border-bottom:2px solid transparent;
+    color:var(--muted);padding:9px 12px;cursor:pointer;white-space:nowrap;
+  }
+  .tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent);}
+
+  main{max-width:960px;margin:0 auto;padding:26px 20px 90px;}
+  section.pane[hidden]{display:none!important;}
+  .lede{font-size:17px;color:var(--ink-2);max-width:62ch;margin:0 0 24px;}
+  .lede em{color:var(--ink);font-style:italic;}
+  .eyebrow{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 6px;}
+  h2.sec{font-size:22px;font-weight:700;margin:0 0 4px;}
+  .sec-note{color:var(--muted);font-size:15px;margin:0 0 20px;max-width:64ch;}
+  hr.rule{border:0;border-top:1px solid var(--line);margin:32px 0;}
+  .block{margin-bottom:34px;}
+
+  /* segment banner */
+  .segbar{
+    display:flex;flex-wrap:wrap;gap:10px 18px;align-items:baseline;
+    background:var(--accent-soft);border-left:3px solid var(--accent);
+    padding:12px 16px;border-radius:0 8px 8px 0;margin:0 0 20px;
+  }
+  .segbar h3{font-size:16px;font-weight:700;color:var(--accent);}
+  .segbar .t{font-family:"JetBrains Mono",monospace;font-size:11.5px;color:var(--ink-2);letter-spacing:.03em;}
+
+  /* question rows */
+  .qitem{
+    background:var(--surface);border:1px solid var(--line);border-radius:9px;
+    padding:14px 16px;margin-bottom:11px;box-shadow:var(--shadow);
+  }
+  .qhead{display:grid;grid-template-columns:26px 1fr auto;gap:10px;align-items:start;}
+  .qnum{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--muted);padding-top:4px;font-variant-numeric:tabular-nums;}
+  .qask{font-family:"Archivo",sans-serif;font-size:15.5px;font-weight:600;line-height:1.42;}
+  .qask .lit{color:var(--accent);}
+  .marks{display:flex;gap:4px;align-items:center;}
+  .mark{
+    width:26px;height:26px;border-radius:6px;border:1px solid var(--line-2);
+    background:transparent;cursor:pointer;font-family:"JetBrains Mono",monospace;
+    font-size:12px;font-weight:600;color:var(--muted);line-height:1;padding:0;
+  }
+  .mark[data-v="y"][aria-pressed="true"]{background:var(--good);border-color:var(--good);color:#fff;}
+  .mark[data-v="p"][aria-pressed="true"]{background:var(--warn);border-color:var(--warn);color:#fff;}
+  .mark[data-v="n"][aria-pressed="true"]{background:var(--bad);border-color:var(--bad);color:#fff;}
+
+  details.model{margin-top:9px;}
+  details.model > summary{
+    list-style:none;cursor:pointer;font-family:"JetBrains Mono",monospace;font-size:10.5px;
+    letter-spacing:.09em;text-transform:uppercase;color:var(--accent);font-weight:600;
+    border:1px dashed var(--line-2);border-radius:5px;padding:5px 10px;display:inline-block;
+  }
+  details.model > summary::-webkit-details-marker{display:none;}
+  details.model[open] > summary{border-style:solid;border-color:var(--accent);}
+  .modelbody{padding-top:8px;max-width:70ch;color:var(--ink-2);font-size:15px;}
+  .modelbody p{margin:0 0 9px;}
+  .modelbody ul{margin:0 0 9px;padding-left:18px;}
+  .modelbody li{margin-bottom:4px;}
+  .modelbody strong{color:var(--ink);font-weight:500;}
+  .modelbody code{font-family:"JetBrains Mono",monospace;font-size:12.5px;background:var(--surface-2);padding:1px 5px;border-radius:4px;color:var(--ink);}
+
+  .probe{
+    border-left:2px solid var(--warn);background:var(--warn-soft);
+    padding:9px 13px;border-radius:0 6px 6px 0;margin:10px 0;font-size:14.5px;
+  }
+  .probe b{font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--warn);display:block;margin-bottom:3px;font-weight:600;}
+  .listen{
+    border-left:2px solid var(--good);background:var(--good-soft);
+    padding:9px 13px;border-radius:0 6px 6px 0;margin:10px 0;font-size:14.5px;
+  }
+  .listen b{font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--good);display:block;margin-bottom:3px;font-weight:600;}
+
+  pre{
+    margin:10px 0;background:var(--code-bg);color:var(--code-fg);border-radius:7px;
+    padding:13px 15px;overflow-x:auto;font-family:"JetBrains Mono",monospace;
+    font-size:12.5px;line-height:1.6;border:1px solid color-mix(in srgb, var(--code-bg) 80%, #7C7268);
+  }
+  pre code{font-family:inherit;background:none;padding:0;color:inherit;white-space:pre;}
+  .k{color:var(--code-kw);} .s{color:var(--code-str);} .c{color:var(--code-com);font-style:italic;}
+  .a{color:var(--code-ann);} .nm{color:var(--code-num);}
+
+  /* scorecard */
+  .score-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:20px;}
+  .stat{background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:14px 16px;box-shadow:var(--shadow);}
+  .stat .lbl{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px;}
+  .stat .val{font-family:"Archivo",sans-serif;font-size:27px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1;}
+  .stat .sub{font-size:13.5px;color:var(--muted);margin-top:3px;}
+  .stat.ok .val{color:var(--good);} .stat.mid .val{color:var(--warn);} .stat.low .val{color:var(--bad);}
+
+  .segscore{display:flex;flex-direction:column;gap:9px;}
+  .segrow{display:grid;grid-template-columns:150px 1fr 62px;gap:12px;align-items:center;font-size:14.5px;}
+  .segrow .nm2{font-family:"Archivo",sans-serif;font-weight:600;font-size:14px;}
+  .segbar2{height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden;display:flex;}
+  .segbar2 i{display:block;height:100%;}
+  .segbar2 i.y{background:var(--good);} .segbar2 i.p{background:var(--warn);} .segbar2 i.n{background:var(--bad);}
+  .segrow .pc{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums;}
+  @media (max-width:560px){ .segrow{grid-template-columns:1fr;gap:4px;} .segrow .pc{text-align:left;} }
+
+  .notesbox{width:100%;min-height:120px;background:var(--surface);color:var(--ink);
+    border:1px solid var(--line);border-radius:9px;padding:13px 15px;
+    font-family:"Newsreader",Georgia,serif;font-size:15px;line-height:1.55;resize:vertical;}
+
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:15px 17px;box-shadow:var(--shadow);}
+  .card h4{font-size:14.5px;font-weight:600;margin-bottom:7px;}
+  .card p,.card ul{font-size:14.5px;color:var(--ink-2);margin:0;}
+  .card ul{padding-left:17px;} .card li{margin-bottom:4px;}
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:13px;}
+
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--muted);margin-bottom:18px;}
+  .legend span{display:flex;align-items:center;gap:6px;}
+  .dot{width:11px;height:11px;border-radius:3px;display:inline-block;}
+  .dot.y{background:var(--good);} .dot.p{background:var(--warn);} .dot.n{background:var(--bad);}
+
+  footer{max-width:960px;margin:0 auto;padding:0 20px 60px;color:var(--muted);font-size:13.5px;}
+  @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important;}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-in">
+    <div class="brandrow">
+      <h1>Mock Panel Runsheet</h1>
+      <span class="foryou">Interviewer copy &mdash; don't send this one</span>
+      <span class="spacer"></span>
+    </div>
+    <div class="clockbox">
+      <span class="clock" id="clock">00:00</span>
+      <button class="ghost primary" id="startBtn">Start</button>
+      <button class="ghost" id="resetBtn">Reset</button>
+      <span class="seglabel" id="seglabel">60-minute panel &middot; not started</span>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button class="tab" role="tab" aria-selected="true"  data-pane="brief">How to run it</button>
+      <button class="tab" role="tab" aria-selected="false" data-pane="s1">1 &middot; Java</button>
+      <button class="tab" role="tab" aria-selected="false" data-pane="s2">2 &middot; Selenium</button>
+      <button class="tab" role="tab" aria-selected="false" data-pane="s3">3 &middot; API</button>
+      <button class="tab" role="tab" aria-selected="false" data-pane="s4">4 &middot; Debug</button>
+      <button class="tab" role="tab" aria-selected="false" data-pane="s5">5 &middot; Lead</button>
+      <button class="tab" role="tab" aria-selected="false" data-pane="score">Scorecard</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<!-- ============ BRIEF ============ -->
+<section class="pane" id="pane-brief" role="tabpanel">
+  <p class="lede">You are the panel. Sixty minutes, five segments, thirty-eight questions &mdash; each with the answer you're listening for, the follow-up to push with, and a three-way mark. <em>She should not see this page.</em> Mark as you go; the scorecard tells you what to spend the remaining days on.</p>
+
+  <div class="legend">
+    <span><i class="dot y"></i> Y &mdash; solid, moved on</span>
+    <span><i class="dot p"></i> P &mdash; partial, needed prompting</span>
+    <span><i class="dot n"></i> N &mdash; couldn't answer</span>
+  </div>
+
+  <div class="block">
+    <p class="eyebrow">Before you start</p>
+    <h2 class="sec">Set it up like the real thing</h2>
+    <div class="grid2">
+      <div class="card">
+        <h4>Sit across from her, not beside</h4>
+        <p>Sounds trivial; it isn't. Being looked at while thinking is most of what makes an interview hard, and it's the part she can't practise alone.</p>
+      </div>
+      <div class="card">
+        <h4>Paper and pen, no laptop</h4>
+        <p>Every coding question gets written by hand. If she reaches for a phone to check syntax, that's an <b>N</b>.</p>
+      </div>
+      <div class="card">
+        <h4>Run the clock and keep to it</h4>
+        <p>Hit Start. When a segment's time is up, move on even mid-answer — real panels do, and rationing her own time is a skill she needs.</p>
+      </div>
+      <div class="card">
+        <h4>Don't help, don't react</h4>
+        <p>No nodding along, no finishing her sentences. Let silences run. "Take your time" is the only assist allowed.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="block">
+    <p class="eyebrow">The one rule that makes this worth doing</p>
+    <h2 class="sec">Always ask the follow-up</h2>
+    <p class="sec-note">Every question below has a <span class="mono" style="color:var(--warn)">PROBE</span>. Ask it even when her first answer was perfect — especially then. The probe is where memorised answers come apart, and it's exactly what EPAM's panel will do.</p>
+    <div class="card">
+      <p style="margin-bottom:9px"><b>Three probes that work on any answer:</b></p>
+      <ul>
+        <li>"Why is that better than the alternative?"</li>
+        <li>"What breaks if you do it the other way?"</li>
+        <li>"Have you actually hit that on a project? What happened?"</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="block">
+    <p class="eyebrow">Timing</p>
+    <h2 class="sec">The sixty minutes</h2>
+    <div class="segscore">
+      <div class="segrow"><span class="nm2">1 &middot; Java</span><span style="font-size:14.5px;color:var(--ink-2)">12 questions, 3 written on paper</span><span class="pc">15 min</span></div>
+      <div class="segrow"><span class="nm2">2 &middot; Selenium</span><span style="font-size:14.5px;color:var(--ink-2)">10 questions incl. framework walkthrough</span><span class="pc">15 min</span></div>
+      <div class="segrow"><span class="nm2">3 &middot; API</span><span style="font-size:14.5px;color:var(--ink-2)">6 questions, 1 written</span><span class="pc">10 min</span></div>
+      <div class="segrow"><span class="nm2">4 &middot; Debug</span><span style="font-size:14.5px;color:var(--ink-2)">4 snippets, read aloud</span><span class="pc">10 min</span></div>
+      <div class="segrow"><span class="nm2">5 &middot; Lead</span><span style="font-size:14.5px;color:var(--ink-2)">6 questions, behavioural</span><span class="pc">10 min</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SEGMENT 1 : JAVA ============ -->
+<section class="pane" id="pane-s1" role="tabpanel" hidden>
+  <div class="segbar"><h3>Segment 1 &middot; Java</h3><span class="t">15 MINUTES &middot; 12 QUESTIONS &middot; Q10&ndash;Q12 ON PAPER</span></div>
+
+  <div class="qitem" data-seg="Java">
+    <div class="qhead"><span class="qnum">01</span><span class="qask">Walk me through the four OOP principles &mdash; and give me an example of each from a framework you've built.</span><span class="marks"></span></div>
+    <details class="model"><summary>What you're listening for</summary><div class="modelbody">
+      <p>Abstraction (test calls <code>loginAs()</code>, never sees WebDriver), encapsulation (private locators in the page class), inheritance (BasePage), polymorphism (<code>WebDriver d = factory.create("chrome")</code>; overloaded <code>click()</code>).</p>
+      <div class="listen"><b>Good sign</b>She reaches for framework examples unprompted. A Dog-extends-Animal answer means she's reciting, not recalling.</div>
+      <div class="probe"><b>Probe</b>"Which of those is resolved at compile time and which at runtime?" &mdash; overloading compile, overriding runtime.</div>
+    </div></details>
+  </div>
+
+  <div class="qitem" data-seg="Java">
+    <div class="qhead"><span class="qnum">02</span><span class="qask">Why is String immutable?</span><span class="marks"></span></div>
+    <details class="model"><summary>What you're listening for</summary><div class="modelbody">
+      <p>Any two of: the string pool can safely share objects, hashCode is cached so it's a safe map key, thread safety without locking, security (values can't change after a check).</p>
+      <div class="probe"><b>Probe</b>"So what do you use inside a loop, and why?" &mdash; StringBuilder; <code>+</code> allocates a new String every iteration.</div>
+    </div></details>
+  </div>
+
+  <div class="qitem" data-seg="Java">
+    <div class="qhead"><span class="qnum">03</span><span class="qask">Difference between <span class="lit">==</span> and <span class="lit">equals()</span>. And what's the contract with hashCode?</span><span class="marks"></span></div>
+    <details class="model"><summary>What you're listening for</summary><div class="modelbody">
+      <p><code>==</code> compares references (values for primitives); <code>equals()</code> compares content when overridden. Contract: equal objects must have equal hashCodes; the reverse isn't required.</p>
+      <div class="probe"><b>Probe</b>"What actually goes wrong if I override equals but not hashCode?" &mdash; the object lands in one bucket and is looked up in another, so <code>HashSet.contains()</code> returns false for an equal object. <b>Silent</b> failure. If she can't name the consequence, mark P.</div>
+    </div></details>
+  </div>
+
+  <div class="qitem" data-seg="Java">
+    <div class="qhead"><span class="qnum">04</span><span class="qask">How does a HashMap work internally?</span><span class="marks"></span></div>
+    <details class="model"><summary>What you're listening for</summary><div class="modelbody">
+      <p>hashCode &rarr; spreading function &rarr; bucket index. Collisions chain, compared by <code>equals()</code>. Default capacity 16, load factor 0.75 so it resizes at 12, and a bucket of 8 converts to a red-black tree (table must be &ge;64 buckets) reverting at 6.</p>
+      <div class="listen"><b>Mark Y only if</b>she gets the numbers. "It uses hashing and buckets" alone is a P &mdash; that's the answer everyone gives.</div>
+      <div class="probe"><b>Probe</b>"What if two different keys have the same hashCode?"</div>
+    </div></details>
+  </div>
+
+  <div class="qitem" data-seg="Java">
+    <div class="qhead"><span class="qnum">05</span><span class="qask">ArrayList vs LinkedList &mdash; and which do you actually use?</span><span class="marks"></span></div>
+    <details class="model"><summary>What you're listening for</summary><div class="modelbody">
+      <p>ArrayList is array-backed: O(1) random access, but inserts in the middle shift elements. LinkedList is a node chain: cheap insert/remove at the ends, O(n) to reach a position. In automation it's ArrayList almost always.</p>
+      <div class="probe"><b>Probe</b>"When would LinkedList actually win?" &mdash; heavy insert/remove at the head or tail, i.e. queue/deque usage.</div>
+    </div></details>
+  </div>
+
+  <div class="qitem" data-seg="Java">
+    <div class="qhead"><span class="qnum">06</span><span class="qask">Abstract class or interface for a BasePage &mdash; which, and why?</span><span class="marks"></span></div>
+    <details class="model"><summary>What you're listening for</summary><div class="modelbody">
+      <p>Abstract class, because BasePage holds <i>state</i> (driver, wait) and shared concrete helpers, and a page genuinely "is a kind of" page. Interfaces for pluggable capability (<code>ITestListener</code>, <code>IRetryAnalyzer</code>).</p>
+      <div class="probe"><b>Probe</b>"Since Java 8 interfaces have default methods &mdash; so why not use one anyway?" &mdash; an interface still can't hold instance state or a constructor.</div>
+    </div></details>
+  </div>
+
+  <div class="qitem" data-seg="Java">
+    <div class="qhead"><span class="qnum">07</span><span class="qask">Checked vs unchecked exceptions. Which kind are Selenium's?</span><span class="marks"></span></div>
+    <details class="model"><summary>What you're listening for</summary><div class="modelbody">
+      <p>Checked = compiler forces handling (IOException). Unchecked = RuntimeException and below. Every Selenium exception extends <code>WebDriverException</code> extends <code>RuntimeException</code> &mdash; unchecked, which is why <code>findElement</code> needs no try/catch.</p>
+      <div class="probe"><b>Probe</b>"Should you ever catch a NoSuchElementException?" &mdash; rarely; only to convert it into a meaningful assertion failure, never to swallow it.</div>
+    </div></details>
+  </div>
+
+  <div class="qitem" data-seg="Java">
+    <div class="qhead"><span class="qnum">08</span><span class="qask">What is ConcurrentModificationException and how do you avoid it?</span><span class="marks"></span></div>
+    <details class="model"><summary>What you're listening for</summary><div class="modelbody">
+      <p>Fail-fast iterators check <code>modCount</code>; structurally modifying while iterating throws. Fixes: <code>iterator.remove()</code>, <code>removeIf()</code>, or iterate a copy.</p>
+      <div class="probe"><b>Probe</b>"Why does removing the second-to-last element sometimes <i>not</i> throw?" &mdash; <code>hasNext()</code> returns false first, so the check never runs. Bonus point if she knows this.</div>
+    </div></details>
+  </div>
+
+  <div class="qitem" data-seg="Java">
+    <div class="qhead"><span class="qnum">09</span><span class="qask">Which Java 8 features do you use day to day in automation?</span><span class="marks"></span></div>
+    <details class="model"><summary>What you're listening for</summary><div class="modelbody">
+      <p>Lambdas, streams, Optional, method references, default methods, <code>java.time</code>/<code>Duration</code>.</p>
+      <div class="listen"><b>Strong answer</b>"<code>ExpectedCondition</code> is a functional interface, which is why <code>wait.until(d -&gt; ...)</code> works." That connects Java to Selenium and is a clear Y.</div>
+      <div class="probe"><b>Probe</b>"Intermediate vs terminal operations &mdash; what happens if there's no terminal op?" &mdash; nothing runs; streams are lazy.</div>
+    </div></details>
+  </div>
+
+  <div class="qitem" data-seg="Java">
+    <div class="qhead"><span class="qnum">10</span><span class="qask">On paper: reverse a string without using <span class="lit">StringBuilder.reverse()</span>.</span><span class="marks"></span></div>
+    <details class="model"><summary>What you're listening for</summary><div class="modelbody">
+<pre><code class="java">public static String reverse(String input) {
+    char[] chars = input.toCharArray();
+    int left = 0, right = chars.length - 1;
+    while (left &lt; right) {
+        char temp = chars[left];
+        chars[left++] = chars[right];
+        chars[right--] = temp;
+    }
+    return new String(chars);
+}</code></pre>
+      <div class="listen"><b>Mark on</b>Does it compile as written? Braces, semicolons, <code>toCharArray()</code>, correct loop bound. A right idea with broken syntax is a P &mdash; on a whiteboard, syntax counts.</div>
+      <div class="probe"><b>Probe</b>"Null or empty input?"</div>
+    </div></details>
+  </div>
+
+  <div class="qitem" data-seg="Java">
+    <div class="qhead"><span class="qnum">11</span><span class="qask">On paper: find the second largest number in an array, without sorting.</span><span class="marks"></span></div>
+    <details class="model"><summary>What you're listening for</summary><div class="modelbody">
+      <p>Two trackers, one pass, with the <code>n != largest</code> guard.</p>
+<pre><code class="java">int largest = Integer.MIN_VALUE, second = Integer.MIN_VALUE;
+for (int n : numbers) {
+    if (n &gt; largest) { second = largest; largest = n; }
+    else if (n &gt; second &amp;&amp; n != largest) { second = n; }
+}</code></pre>
+      <div class="probe"><b>Probe &mdash; ask this one every time</b>"What does your code return for <code>{5, 5, 5}</code>?" Without the <code>!=</code> guard it returns 5, which is wrong. <b>This is the whole question.</b></div>
+    </div></details>
+  </div>
+
+  <div class="qitem" data-seg="Java">
+    <div class="qhead"><span class="qnum">12</span><span class="qask">On paper: from a <span class="lit">List&lt;Employee&gt;</span>, give me the highest-paid person in each department.</span><span class="marks"></span></div>
+    <details class="model"><summary>What you're listening for</summary><div class="modelbody">
+<pre><code class="java">Map&lt;String, Optional&lt;Employee&gt;&gt; topPaid = employees.stream()
+        .collect(Collectors.groupingBy(
+                Employee::getDepartment,
+                Collectors.maxBy(Comparator.comparingDouble(Employee::getSalary))));</code></pre>
+      <div class="listen"><b>Mark on</b><code>groupingBy</code> with a downstream collector. If she writes a loop with a map instead, that's still a P &mdash; it works, but streams are what's being tested.</div>
+      <div class="probe"><b>Probe</b>"Why is the value an <code>Optional</code>?" &mdash; <code>maxBy</code> returns one because a group could theoretically be empty.</div>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ SEGMENT 2 : SELENIUM ============ -->
+<section class="pane" id="pane-s2" role="tabpanel" hidden>
+  <div class="segbar"><h3>Segment 2 &middot; Selenium &amp; framework</h3><span class="t">15 MINUTES &middot; 10 QUESTIONS &middot; Q1 IS THE BIG ONE</span></div>
+
+  <div class="qitem" data-seg="Selenium">
+    <div class="qhead"><span class="qnum">01</span><span class="qask">Walk me through the framework you built. Take a couple of minutes.</span><span class="marks"></span></div>
+    <details class="model"><summary>What you're listening for</summary><div class="modelbody">
+      <p><b>Time this one.</b> Target is 90 seconds, hard ceiling 2 minutes. Structure: the problem it solved &rarr; the layers &rarr; data and config &rarr; how it executes in CI &rarr; one decision she owned, with a number.</p>
+      <div class="listen"><b>Mark Y if</b>it lands under two minutes, has layers, and ends on a decision with a figure attached.</div>
+      <div class="probe"><b>Probe</b>"What would you change about it if you started again?" &mdash; a lead should have an answer. "Nothing" is a P.</div>
+    </div></details>
+  </div>
+
+  <div class="qitem" data-seg="Selenium">
+    <div class="qhead"><span class="qnum">02</span><span class="qask">Implicit, explicit, fluent wait &mdash; explain the difference.</span><span class="marks"></span></div>
+    <details class="model"><summary>What you're listening for</summary><div class="modelbody">
+      <p>Implicit = global, applies to every findElement, presence only. Explicit = one element, one condition, polls. Fluent = explicit plus polling interval and ignored exceptions.</p>
+      <div class="probe"><b>Probe &mdash; the real question</b>"What happens if I set both implicit and explicit?" They compound unpredictably; every internal findElement during polling inherits the implicit timeout. <b>Answer must be "never mix them; implicit at zero." Anything vaguer is a P.</b></div>
+    </div></details>
+  </div>
+
+  <div class="qitem" data-seg="Selenium">
+    <div class="qhead"><span class="qnum">03</span><span class="qask">Presence vs visibility &mdash; what's the difference and when does it bite?</span><span class="marks"></span></div>
+    <details class="model"><summary>What you're listening for</summary><div class="modelbody">
+      <p>Presence = in the DOM. Visibility = in the DOM and rendered with non-zero size. Waiting on presence then clicking gives ElementNotInteractableException.</p>
+      <div class="probe"><b>Probe</b>"And which condition do you use before a click?" &mdash; <code>elementToBeClickable</code>, which is visible <i>and</i> enabled.</div>
+    </div></details>
+  </div>
+
+  <div class="qitem" data-seg="Selenium">
+    <div class="qhead"><span class="qnum">04</span><span class="qask">You get StaleElementReferenceException on the second row of a table loop. Why, and how do you fix it?</span><span class="marks"></span></div>
+    <details class="model"><summary>What you're listening for</summary><div class="modelbody">
+      <p>The cached WebElement points at a DOM node destroyed by the re-render. Fix: re-locate inside the loop by index, or wait for <code>stalenessOf</code> then re-find.</p>
+      <div class="listen"><b>Lead-level bonus</b>"I'd set the data up via API and skip the loop entirely."</div>
+      <div class="probe"><b>Probe</b>"Would you wrap it in a retry?" &mdash; acceptable as a last resort, but it can hide a real timing bug.</div>
+    </div></details>
+  </div>
+
+  <div class="qitem" data-seg="Selenium">
+    <div class="qhead"><span class="qnum">05</span><span class="qask">ElementClickIntercepted &mdash; what causes it, and is a JS click a valid fix?</span><span class="marks"></span></div>
+    <details class="model"><summary>What you're listening for</summary><div class="modelbody">
+      <p>Something else would receive the click: sticky header, modal, toast, overlay. Fix by waiting for the overlay to clear or scrolling into view.</p>
+      <div class="listen"><b>The answer that marks a lead</b>"A JS click bypasses the visibility check, so it can pass on a button no real user could reach. That's a false negative, and I'd challenge it in code review."</div>
+    </div></details>
+  </div>
+
+  <div class="qitem" data-seg="Selenium">
+    <div class="qhead"><span class="qnum">06</span><span class="qask">How do you run tests in parallel, and what breaks when you turn it on?</span><span class="marks"></span></div>
+    <details class="model"><summary>What you're listening for</summary><div class="modelbody">
+      <p>testng.xml <code>parallel</code> = methods/classes/tests/instances plus thread-count. Breaks: shared static driver, shared ExtentTest, shared test data, order dependence, shared output files.</p>
+      <div class="probe"><b>Probe</b>"How do you give each thread its own driver?" &mdash; <code>ThreadLocal&lt;WebDriver&gt;</code>. Then: "And what do you do in teardown?" &mdash; <code>quit()</code> <b>and</b> <code>remove()</code>. If she misses <code>remove()</code>, mark P and tell her why it matters.</div>
+    </div></details>
+  </div>
+
+  <div class="qitem" data-seg="Selenium">
+    <div class="qhead"><span class="qnum">07</span><span class="qask">Give me the TestNG annotations in execution order, and tell me what a listener is for.</span><span class="marks"></span></div>
+    <details class="model"><summary>What you're listening for</summary><div class="modelbody">
+      <p>BeforeSuite &rarr; BeforeTest &rarr; BeforeClass &rarr; BeforeMethod &rarr; Test &rarr; AfterMethod &rarr; AfterClass &rarr; AfterTest &rarr; AfterSuite. <code>ITestListener.onTestFailure</code> is where the screenshot and report entry happen.</p>
+      <div class="probe"><b>Probe</b>"Where would you put an assertion &mdash; can it go in @AfterMethod?" &mdash; no; a failure there is a configuration failure and can cascade into skips.</div>
+    </div></details>
+  </div>
+
+  <div class="qitem" data-seg="Selenium">
+    <div class="qhead"><span class="qnum">08</span><span class="qask">What's new in Selenium 4 compared with 3?</span><span class="marks"></span></div>
+    <details class="model"><summary>What you're listening for</summary><div class="modelbody">
+      <p>Any four: W3C protocol only, Options replaces DesiredCapabilities, relative locators, Duration-based timeouts, new window/tab API, CDP access, element screenshots, Selenium Manager, Shadow DOM support, rewritten Grid.</p>
+      <div class="probe"><b>Probe</b>"So do you still need WebDriverManager?" &mdash; not since 4.6; Selenium Manager resolves drivers itself.</div>
+    </div></details>
+  </div>
+
+  <div class="qitem" data-seg="Selenium">
+    <div class="qhead"><span class="qnum">09</span><span class="qask">A test fails once in every ten runs. Walk me through what you do.</span><span class="marks"></span></div>
+    <details class="model"><summary>What you're listening for</summary><div class="modelbody">
+      <p>Measure (invocationCount), classify the cause (timing / data / environment / order / genuine race), fix by cause, quarantine with an owner rather than delete, and track the flaky rate as a metric.</p>
+      <div class="listen"><b>Listen for</b>"The real cost is that people stop believing red means broken." That framing is the lead answer.</div>
+      <div class="probe"><b>Probe</b>"Your PM says just add a retry and move on. What do you say?"</div>
+    </div></details>
+  </div>
+
+  <div class="qitem" data-seg="Selenium">
+    <div class="qhead"><span class="qnum">10</span><span class="qask">Write me the XPath for the Edit button in the row whose invoice number is INV-2043.</span><span class="marks"></span></div>
+    <details class="model"><summary>What you're listening for</summary><div class="modelbody">
+<pre><code class="java">//td[text()='INV-2043']/ancestor::tr//button[@title='Edit']</code></pre>
+      <div class="listen"><b>Mark on</b>Use of an axis to traverse upward. If she writes a positional path like <code>//tr[3]/td[5]/button</code>, that's an N &mdash; it's the exact locator habit that causes flaky suites.</div>
+      <div class="probe"><b>Probe</b>"Could you do that in CSS?" &mdash; no; CSS can't match on text and can't go up the tree.</div>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ SEGMENT 3 : API ============ -->
+<section class="pane" id="pane-s3" role="tabpanel" hidden>
+  <div class="segbar"><h3>Segment 3 &middot; API &amp; REST Assured</h3><span class="t">10 MINUTES &middot; 6 QUESTIONS &middot; Q3 ON PAPER</span></div>
+
+  <div class="qitem" data-seg="API">
+    <div class="qhead"><span class="qnum">01</span><span class="qask">Explain the structure of a REST Assured test.</span><span class="marks"></span></div>
+    <details class="model"><summary>What you're listening for</summary><div class="modelbody">
+      <p>given = request setup (base URI, headers, auth, params, body); when = verb and endpoint; then = assertions. Matchers come from Hamcrest via static import.</p>
+      <div class="probe"><b>Probe</b>"Where do <code>equalTo</code> and <code>hasItem</code> come from?" &mdash; <code>org.hamcrest.Matchers</code>.</div>
+    </div></details>
+  </div>
+
+  <div class="qitem" data-seg="API">
+    <div class="qhead"><span class="qnum">02</span><span class="qask">401 vs 403. And 400 vs 422.</span><span class="marks"></span></div>
+    <details class="model"><summary>What you're listening for</summary><div class="modelbody">
+      <p>401 = not authenticated (no or bad token). 403 = authenticated but not permitted. 400 = malformed request. 422 = syntactically fine, business validation failed.</p>
+      <div class="probe"><b>Probe</b>"Which one do teams most often forget to test?" &mdash; 403: a valid user with the wrong role. It's the authorisation gap behind a lot of real security defects.</div>
+    </div></details>
+  </div>
+
+  <div class="qitem" data-seg="API">
+    <div class="qhead"><span class="qnum">03</span><span class="qask">On paper: log in, extract the token, then use it to GET a user and assert on the response.</span><span class="marks"></span></div>
+    <details class="model"><summary>What you're listening for</summary><div class="modelbody">
+<pre><code class="java">String token = given()
+        .contentType(ContentType.JSON)
+        .body(credentials)
+    .when()
+        .post("/auth/login")
+    .then()
+        .statusCode(200)
+        .extract().path("access_token");
+
+given()
+        .header("Authorization", "Bearer " + token)
+    .when()
+        .get("/v1/users/101")
+    .then()
+        .statusCode(200)
+        .body("email", equalTo("a@test.com"));</code></pre>
+      <div class="listen"><b>Mark on</b><code>.extract()</code> used correctly, and <code>contentType</code> present on the POST. Missing contentType is the 415 bug from her drills — worth noting if she omits it.</div>
+    </div></details>
+  </div>
+
+  <div class="qitem" data-seg="API">
+    <div class="qhead"><span class="qnum">04</span><span class="qask">PUT vs PATCH. Which are idempotent?</span><span class="marks"></span></div>
+    <details class="model"><summary>What you're listening for</summary><div class="modelbody">
+      <p>PUT replaces the whole resource and is idempotent; PATCH is a partial update and isn't guaranteed to be. GET, PUT, DELETE, HEAD idempotent; POST not.</p>
+      <div class="probe"><b>Probe</b>"What's the classic defect with a badly implemented PUT?" &mdash; fields omitted from the payload get silently nulled.</div>
+    </div></details>
+  </div>
+
+  <div class="qitem" data-seg="API">
+    <div class="qhead"><span class="qnum">05</span><span class="qask">How would you stop every test repeating the same base URI, headers and token?</span><span class="marks"></span></div>
+    <details class="model"><summary>What you're listening for</summary><div class="modelbody">
+      <p><code>RequestSpecBuilder</code> and <code>ResponseSpecBuilder</code>, built once and passed via <code>.spec()</code>. Token generated once in <code>@BeforeSuite</code> and cached.</p>
+      <div class="probe"><b>Probe</b>"Why not just log in before each test?" &mdash; 200 tests means 200 auth calls, rate limiting, and failures that look like flakiness.</div>
+    </div></details>
+  </div>
+
+  <div class="qitem" data-seg="API">
+    <div class="qhead"><span class="qnum">06</span><span class="qask">Why would you push testing down from UI to API?</span><span class="marks"></span></div>
+    <details class="model"><summary>What you're listening for</summary><div class="modelbody">
+      <p>Speed, stability, isolation of the failure, can run before the UI exists, and it's the fastest way to set up state for UI tests.</p>
+      <div class="listen"><b>Listen for a real example</b>"We moved setup steps to API calls and the flaky rate dropped." A concrete story here is a strong Y.</div>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ SEGMENT 4 : DEBUG ============ -->
+<section class="pane" id="pane-s4" role="tabpanel" hidden>
+  <div class="segbar"><h3>Segment 4 &middot; Find the defect</h3><span class="t">10 MINUTES &middot; 4 SNIPPETS &middot; SHOW HER THE SCREEN</span></div>
+  <p class="sec-note">Turn the laptop round and let her read each snippet. Say nothing. Give her two minutes per snippet and mark on whether she names the defect <i>and</i> the mechanism.</p>
+
+  <div class="qitem" data-seg="Debug">
+    <div class="qhead"><span class="qnum">01</span><span class="qask">What's wrong here?</span><span class="marks"></span></div>
+<pre><code class="java">public class BaseTest {
+
+    public static WebDriver driver;
+
+    @BeforeMethod
+    public void setUp() {
+        driver = new ChromeDriver();
+    }
+
+    @AfterMethod
+    public void tearDown() {
+        driver.close();
+    }
+}</code></pre>
+    <details class="model"><summary>What you're listening for</summary><div class="modelbody">
+      <p><b>Two defects.</b> (1) <code>static</code> driver shared across threads &mdash; breaks in parallel with random NoSuchWindow/NoSuchSession. (2) <code>close()</code> instead of <code>quit()</code> &mdash; leaks driver processes on the CI agent.</p>
+      <div class="listen"><b>Mark Y only if she finds both.</b> One of two is a P. Most candidates spot the static and stop.</div>
+    </div></details>
+  </div>
+
+  <div class="qitem" data-seg="Debug">
+    <div class="qhead"><span class="qnum">02</span><span class="qask">This test is always green. The application is broken. Why?</span><span class="marks"></span></div>
+<pre><code class="java">@Test
+public void verifyProfile() {
+    SoftAssert soft = new SoftAssert();
+
+    soft.assertEquals(profilePage.name(),  "Aishwarya");
+    soft.assertEquals(profilePage.email(), "aishwarya@test.com");
+    soft.assertEquals(profilePage.role(),  "Team Lead");
+}</code></pre>
+    <details class="model"><summary>What you're listening for</summary><div class="modelbody">
+      <p>Missing <code>soft.assertAll()</code>. SoftAssert collects failures and reports nothing without it, so the test can never fail.</p>
+      <div class="probe"><b>Probe</b>"How would you stop this happening across the team?" &mdash; enforce in code review, or extend SoftAssert and call assertAll from @AfterMethod. Bonus: "break the app once and confirm the test goes red &mdash; a test you've never seen fail isn't a test."</div>
+    </div></details>
+  </div>
+
+  <div class="qitem" data-seg="Debug">
+    <div class="qhead"><span class="qnum">03</span><span class="qask">The spinner clears in two seconds. This line sometimes blocks for over a minute. Why?</span><span class="marks"></span></div>
+<pre><code class="java">driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(20));
+
+WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+wait.until(ExpectedConditions.invisibilityOfElementLocated(By.id("spinner")));</code></pre>
+    <details class="model"><summary>What you're listening for</summary><div class="modelbody">
+      <p>Mixed waits. Each internal findElement during polling inherits the 20-second implicit wait, so the timeouts compound. Fix: implicit at zero.</p>
+      <div class="listen"><b>Mark P if</b>she says "don't mix them" without explaining the polling mechanism. The mechanism is the answer.</div>
+    </div></details>
+  </div>
+
+  <div class="qitem" data-seg="Debug">
+    <div class="qhead"><span class="qnum">04</span><span class="qask">Nothing throws and the code works. So what would you raise in code review?</span><span class="marks"></span></div>
+<pre><code class="java">public class LoginPage {
+
+    WebDriver driver;
+
+    public WebElement getUsernameField() {
+        return driver.findElement(By.id("userName"));
+    }
+
+    public WebElement getSignInButton() {
+        return driver.findElement(By.cssSelector("button[type='submit']"));
+    }
+}
+
+// in the test
+loginPage.getUsernameField().sendKeys("admin");
+loginPage.getSignInButton().click();</code></pre>
+    <details class="model"><summary>What you're listening for</summary><div class="modelbody">
+      <p>It's a locator dictionary, not a page object. Returning WebElement leaks the Selenium API into the test, there's no reuse, nowhere to put the waits, and no navigation model. Should be <code>loginAs(user, pass)</code> returning the next page object.</p>
+      <div class="listen"><b>This is the lead-level question in the set.</b> Finding a defect in working code is what separates senior from lead. A confident answer here is a strong signal.</div>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ SEGMENT 5 : LEAD ============ -->
+<section class="pane" id="pane-s5" role="tabpanel" hidden>
+  <div class="segbar"><h3>Segment 5 &middot; Leadership</h3><span class="t">10 MINUTES &middot; 6 QUESTIONS &middot; PUSH BACK ON EVERY ANSWER</span></div>
+
+  <div class="qitem" data-seg="Lead">
+    <div class="qhead"><span class="qnum">01</span><span class="qask">You've joined a team with 900 automated tests and nobody trusts the suite. First thirty days &mdash; what do you do?</span><span class="marks"></span></div>
+    <details class="model"><summary>What you're listening for</summary><div class="modelbody">
+      <p>Measure before changing: pass rate, flaky rate, runtime, what's actually covered. Then quarantine the flaky ones so the pipeline is trustworthy again, fix by cause, and only then talk about adding tests.</p>
+      <div class="listen"><b>Red flag</b>Jumping straight to "rewrite the framework." A lead diagnoses first.</div>
+    </div></details>
+  </div>
+
+  <div class="qitem" data-seg="Lead">
+    <div class="qhead"><span class="qnum">02</span><span class="qask">It's release day, forty tests are red, and the PM wants a yes or no. What do you say?</span><span class="marks"></span></div>
+    <details class="model"><summary>What you're listening for</summary><div class="modelbody">
+      <p>Triage by cause first (real defects vs environment vs test bugs), assess by severity and area, then give a risk statement with a recommendation &mdash; and be explicit that the business owns the go/no-go while she documents the accepted risk.</p>
+      <div class="listen"><b>Strong answer</b>"I'll never say 'don't ship.' I'll say what's broken, who it affects, and what I recommend."</div>
+      <div class="probe"><b>Probe &mdash; push hard</b>"I don't have time for triage. Just tell me yes or no." See whether she holds the line politely or folds.</div>
+    </div></details>
+  </div>
+
+  <div class="qitem" data-seg="Lead">
+    <div class="qhead"><span class="qnum">03</span><span class="qask">How do you estimate automation effort for a new module?</span><span class="marks"></span></div>
+    <details class="model"><summary>What you're listening for</summary><div class="modelbody">
+      <p>Classify scenarios simple/medium/complex with hours from history, add setup as a separate line, add 15&ndash;20% maintenance, name the buffer explicitly, and give a range with stated assumptions rather than one number.</p>
+      <div class="probe"><b>Probe</b>"Your estimate is 15 days and you're given 8. What now?" &mdash; cut scope, not quality: prioritise critical path, be explicit about what won't be covered.</div>
+    </div></details>
+  </div>
+
+  <div class="qitem" data-seg="Lead">
+    <div class="qhead"><span class="qnum">04</span><span class="qask">What metrics do you report upward, and which do you refuse to?</span><span class="marks"></span></div>
+    <details class="model"><summary>What you're listening for</summary><div class="modelbody">
+      <p>Report: critical-path coverage, pass rate trend, flaky rate, execution time, defect leakage, detection stage. Refuse: test case count, defects raised &mdash; volume metrics that reward the wrong behaviour.</p>
+      <div class="listen"><b>Naming what she won't report, unprompted, is a strong Y.</b></div>
+    </div></details>
+  </div>
+
+  <div class="qitem" data-seg="Lead">
+    <div class="qhead"><span class="qnum">05</span><span class="qask">Tell me about a time you disagreed with a developer or a manager. What happened?</span><span class="marks"></span></div>
+    <details class="model"><summary>What you're listening for</summary><div class="modelbody">
+      <p>STAR, with evidence over opinion, the requirement as the anchor, escalating the question rather than the person, and a result where the decision was made and the relationship survived.</p>
+      <div class="listen"><b>Red flag</b>Making the other person the villain. Listen for how she talks about them.</div>
+      <div class="probe"><b>Probe</b>"And looking back, was there anything you'd do differently?"</div>
+    </div></details>
+  </div>
+
+  <div class="qitem" data-seg="Lead">
+    <div class="qhead"><span class="qnum">06</span><span class="qask">What questions do you have for us?</span><span class="marks"></span></div>
+    <details class="model"><summary>What you're listening for</summary><div class="modelbody">
+      <p>Three ready, and lead-level: state of the existing automation estate, team size and mix, where QA sits in the release decision, what success looks like at six months.</p>
+      <div class="listen"><b>Mark N if</b>she has none, or asks about salary or WFH in a technical panel.</div>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ SCORECARD ============ -->
+<section class="pane" id="pane-score" role="tabpanel" hidden>
+  <p class="eyebrow">After the mock</p>
+  <h2 class="sec">Scorecard</h2>
+  <p class="sec-note">Updates as you mark. Anything below 70% in a segment is where the remaining days go.</p>
+
+  <div class="score-grid">
+    <div class="stat" id="statOverall"><span class="lbl">Overall</span><span class="val" id="valOverall">&mdash;</span><span class="sub" id="subOverall">Nothing marked yet</span></div>
+    <div class="stat" id="statAnswered"><span class="lbl">Questions marked</span><span class="val" id="valAnswered">0 / 38</span><span class="sub">Across five segments</span></div>
+    <div class="stat" id="statWeak"><span class="lbl">Weakest segment</span><span class="val" id="valWeak" style="font-size:20px">&mdash;</span><span class="sub" id="subWeak">Mark some answers first</span></div>
+  </div>
+
+  <div class="legend">
+    <span><i class="dot y"></i> Solid</span>
+    <span><i class="dot p"></i> Partial</span>
+    <span><i class="dot n"></i> Missed</span>
+  </div>
+
+  <div class="block">
+    <div class="segscore" id="segScores"></div>
+  </div>
+
+  <hr class="rule">
+
+  <div class="block">
+    <p class="eyebrow">Write it down while it's fresh</p>
+    <h2 class="sec">Debrief notes</h2>
+    <p class="sec-note">Do the debrief within ten minutes of finishing, and lead with what went well &mdash; she'll have spent the last hour cataloguing her own mistakes.</p>
+    <textarea class="notesbox" id="notes" placeholder="What landed well:&#10;&#10;What to re-drill:&#10;&#10;Habits to fix (rushing, apologising, going silent, over-explaining):&#10;"></textarea>
+    <p class="sec-note" style="margin-top:8px">Saved in this browser as you type.</p>
+  </div>
+
+  <div class="block">
+    <p class="eyebrow">Reading the result</p>
+    <h2 class="sec">What the score means</h2>
+    <div class="grid2">
+      <div class="card">
+        <h4>Above 80%</h4>
+        <p>She's ready. Spend remaining time on delivery — pace, not content. Re-run only the specific questions marked N.</p>
+      </div>
+      <div class="card">
+        <h4>60&ndash;80%</h4>
+        <p>Normal at this stage. Target the weakest segment for a full day, then re-mock only that segment rather than all sixty minutes.</p>
+      </div>
+      <div class="card">
+        <h4>Below 60%</h4>
+        <p>Don't panic and don't cram everything. Pick the three highest-frequency topics — waits, HashMap, the framework walkthrough — and get those to solid.</p>
+      </div>
+      <div class="card">
+        <h4>Whatever the number</h4>
+        <p>Tell her the two things she did best, specifically, before anything else. Confidence is a scored attribute in the real panel.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  Interviewer copy. Marks and notes are saved in this browser only.
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---- tabs ---- */
+  var tabs = Array.prototype.slice.call(document.querySelectorAll(".tab"));
+  var panes = {};
+  tabs.forEach(function (t) { panes[t.dataset.pane] = document.getElementById("pane-" + t.dataset.pane); });
+
+  function show(name) {
+    tabs.forEach(function (t) {
+      var on = t.dataset.pane === name;
+      t.setAttribute("aria-selected", on ? "true" : "false");
+      panes[t.dataset.pane].hidden = !on;
+    });
+    try { localStorage.setItem("mock.tab", name); } catch (e) {}
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }
+  tabs.forEach(function (t) { t.addEventListener("click", function () { show(t.dataset.pane); }); });
+  try { var sv = localStorage.getItem("mock.tab"); if (sv && panes[sv]) show(sv); } catch (e) {}
+
+  /* ---- marks ---- */
+  var KEY = "mock.marks";
+  var marks = {};
+  try { marks = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { marks = {}; }
+
+  var items = Array.prototype.slice.call(document.querySelectorAll(".qitem"));
+  var LABEL = { y: "Y", p: "P", n: "N" };
+  var TITLE = { y: "Solid", p: "Partial", n: "Missed" };
+
+  items.forEach(function (item, i) {
+    var seg = item.dataset.seg;
+    var id = seg + "-" + i;
+    var holder = item.querySelector(".marks");
+    ["y", "p", "n"].forEach(function (v) {
+      var b = document.createElement("button");
+      b.className = "mark";
+      b.dataset.v = v;
+      b.textContent = LABEL[v];
+      b.title = TITLE[v];
+      b.setAttribute("aria-label", TITLE[v]);
+      b.setAttribute("aria-pressed", marks[id] === v ? "true" : "false");
+      b.addEventListener("click", function () {
+        if (marks[id] === v) { delete marks[id]; } else { marks[id] = v; }
+        Array.prototype.forEach.call(holder.children, function (c) {
+          c.setAttribute("aria-pressed", marks[id] === c.dataset.v ? "true" : "false");
+        });
+        try { localStorage.setItem(KEY, JSON.stringify(marks)); } catch (e) {}
+        paint();
+      });
+      holder.appendChild(b);
+    });
+    item.dataset.id = id;
+  });
+
+  /* ---- scorecard ---- */
+  var SEGS = ["Java", "Selenium", "API", "Debug", "Lead"];
+  var segScores = document.getElementById("segScores");
+
+  function paint() {
+    var tally = {};
+    SEGS.forEach(function (s) { tally[s] = { y: 0, p: 0, n: 0, total: 0 }; });
+
+    items.forEach(function (item) {
+      var seg = item.dataset.seg;
+      tally[seg].total++;
+      var m = marks[item.dataset.id];
+      if (m) tally[seg][m]++;
+    });
+
+    var totalY = 0, totalP = 0, totalN = 0, totalQ = items.length;
+    SEGS.forEach(function (s) { totalY += tally[s].y; totalP += tally[s].p; totalN += tally[s].n; });
+    var marked = totalY + totalP + totalN;
+
+    document.getElementById("valAnswered").textContent = marked + " / " + totalQ;
+
+    var overallEl = document.getElementById("statOverall");
+    var valOverall = document.getElementById("valOverall");
+    var subOverall = document.getElementById("subOverall");
+
+    if (marked === 0) {
+      valOverall.textContent = "—";
+      subOverall.textContent = "Nothing marked yet";
+      overallEl.className = "stat";
+    } else {
+      var pctv = Math.round((totalY + totalP * 0.5) / marked * 100);
+      valOverall.textContent = pctv + "%";
+      subOverall.textContent = totalY + " solid, " + totalP + " partial, " + totalN + " missed";
+      overallEl.className = "stat " + (pctv >= 80 ? "ok" : pctv >= 60 ? "mid" : "low");
+    }
+
+    /* weakest segment among those with marks */
+    var weak = null, weakPct = 101;
+    SEGS.forEach(function (s) {
+      var t = tally[s];
+      var m = t.y + t.p + t.n;
+      if (m === 0) return;
+      var p = (t.y + t.p * 0.5) / m * 100;
+      if (p < weakPct) { weakPct = p; weak = s; }
+    });
+    var weakEl = document.getElementById("statWeak");
+    if (weak) {
+      document.getElementById("valWeak").textContent = weak;
+      document.getElementById("subWeak").textContent = Math.round(weakPct) + "% — spend a day here";
+      weakEl.className = "stat " + (weakPct >= 80 ? "ok" : weakPct >= 60 ? "mid" : "low");
+    } else {
+      document.getElementById("valWeak").textContent = "—";
+      document.getElementById("subWeak").textContent = "Mark some answers first";
+      weakEl.className = "stat";
+    }
+
+    /* per-segment bars */
+    segScores.innerHTML = "";
+    SEGS.forEach(function (s) {
+      var t = tally[s];
+      var m = t.y + t.p + t.n;
+      var row = document.createElement("div");
+      row.className = "segrow";
+
+      var nm = document.createElement("span");
+      nm.className = "nm2";
+      nm.textContent = s;
+
+      var bar = document.createElement("span");
+      bar.className = "segbar2";
+      ["y", "p", "n"].forEach(function (v) {
+        if (t[v] === 0) return;
+        var i2 = document.createElement("i");
+        i2.className = v;
+        i2.style.width = (t[v] / t.total * 100) + "%";
+        bar.appendChild(i2);
+      });
+
+      var pc = document.createElement("span");
+      pc.className = "pc";
+      pc.textContent = m === 0 ? "—" : Math.round((t.y + t.p * 0.5) / m * 100) + "%";
+
+      row.appendChild(nm); row.appendChild(bar); row.appendChild(pc);
+      segScores.appendChild(row);
+    });
+  }
+
+  /* ---- notes ---- */
+  var notes = document.getElementById("notes");
+  try {
+    var savedNotes = localStorage.getItem("mock.notes");
+    if (savedNotes) notes.value = savedNotes;
+  } catch (e) {}
+  notes.addEventListener("input", function () {
+    try { localStorage.setItem("mock.notes", notes.value); } catch (e) {}
+  });
+
+  /* ---- timer ---- */
+  var BOUNDS = [
+    { name: "1 · Java",     end: 15 },
+    { name: "2 · Selenium", end: 30 },
+    { name: "3 · API",      end: 40 },
+    { name: "4 · Debug",    end: 50 },
+    { name: "5 · Lead",     end: 60 }
+  ];
+  var clockEl = document.getElementById("clock");
+  var segLabel = document.getElementById("seglabel");
+  var startBtn = document.getElementById("startBtn");
+  var resetBtn = document.getElementById("resetBtn");
+  var seconds = 0, timer = null;
+
+  function two(n) { return (n < 10 ? "0" : "") + n; }
+
+  function tick() {
+    seconds++;
+    clockEl.textContent = two(Math.floor(seconds / 60)) + ":" + two(seconds % 60);
+    var mins = seconds / 60;
+    var current = null;
+    for (var i = 0; i < BOUNDS.length; i++) {
+      if (mins < BOUNDS[i].end) { current = BOUNDS[i]; break; }
+    }
+    if (current) {
+      var left = Math.ceil(current.end - mins);
+      segLabel.textContent = current.name + " · " + left + " min left in this segment";
+      clockEl.classList.remove("over");
+    } else {
+      segLabel.textContent = "Over 60 minutes — wrap up";
+      clockEl.classList.add("over");
+    }
+  }
+
+  startBtn.addEventListener("click", function () {
+    if (timer) {
+      clearInterval(timer); timer = null;
+      startBtn.textContent = "Resume";
+      segLabel.textContent = "Paused";
+    } else {
+      timer = setInterval(tick, 1000);
+      startBtn.textContent = "Pause";
+      tick();
+    }
+  });
+
+  resetBtn.addEventListener("click", function () {
+    if (timer) { clearInterval(timer); timer = null; }
+    seconds = 0;
+    clockEl.textContent = "00:00";
+    clockEl.classList.remove("over");
+    startBtn.textContent = "Start";
+    segLabel.textContent = "60-minute panel · not started";
+  });
+
+  /* ---- java highlighting ---- */
+  var KW = ["public","private","protected","static","final","abstract","class","interface","extends",
+            "implements","import","new","return","if","else","for","while","try","catch","finally",
+            "throw","throws","void","int","long","double","boolean","char","var","this","super",
+            "null","true","false","String","List","Map","Set","Optional"];
+  var RE = new RegExp(
+    "(\\/\\/[^\\n]*|\\/\\*[\\s\\S]*?\\*\\/)" +
+    "|(\"(?:\\\\.|[^\"\\\\])*\")" +
+    "|(@[A-Za-z_][A-Za-z0-9_]*)" +
+    "|(\\b\\d+(?:\\.\\d+)?[LlDdFf]?\\b)" +
+    "|(\\b(?:" + KW.join("|") + ")\\b)", "g");
+
+  function esc(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+
+  Array.prototype.forEach.call(document.querySelectorAll("pre code"), function (block) {
+    var src = block.textContent, out = "", last = 0, m;
+    RE.lastIndex = 0;
+    while ((m = RE.exec(src)) !== null) {
+      out += esc(src.slice(last, m.index));
+      var cls = m[1] ? "c" : m[2] ? "s" : m[3] ? "a" : m[4] ? "nm" : "k";
+      out += '<span class="' + cls + '">' + esc(m[0]) + "</span>";
+      last = m.index + m[0].length;
+    }
+    out += esc(src.slice(last));
+    block.innerHTML = out;
+  });
+
+  paint();
+})();
+</script>
+</body>
+</html>
