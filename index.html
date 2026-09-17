@@ -1514,17 +1514,18 @@ Map&lt;String, Optional&lt;Employee&gt;&gt; topPaid = employees.stream()
     if (input == null) return null;
 
     char[] chars = input.toCharArray();
-    int left = 0;
-    int right = chars.length - 1;
 
-    while (left &lt; right) {
-        char temp = chars[left];
-        chars[left++] = chars[right];
-        chars[right--] = temp;
+    // Two pointers. left walks forward, right walks backward,
+    // and they swap until they meet in the middle.
+    for (int left = 0, right = chars.length - 1; left &lt; right; left++, right--) {
+        char temp    = chars[left];
+        chars[left]  = chars[right];
+        chars[right] = temp;
     }
     return new String(chars);
 }</code></pre>
       <span class="cplx">O(n) time &middot; O(n) space &middot; two-pointer swap, in place on the char array</span>
+      <p class="note"><b>Why a <code>for</code> loop and not a <code>while</code>:</b> a <code>for</code> declares both pointers, the stop condition and both moves on one line, so you can read the whole loop at a glance. Writing <code>chars[left++] = chars[right]</code> inside a <code>while</code> hides the movement inside the assignment &mdash; it works, but it's the kind of line that's easy to get wrong under pressure on a whiteboard. Keep the swap and the movement separate.</p>
       <p class="note"><b>Follow-up:</b> "Do it recursively." &mdash; <code>return reverse(s.substring(1)) + s.charAt(0);</code> with <code>if (s.isEmpty()) return s;</code> as the base case. Then say the honest thing: it's elegant but allocates a new String per frame and stack-overflows on long input, so the iterative version is what she'd ship.</p>
     </div></details>
   </div>
@@ -1539,11 +1540,8 @@ Map&lt;String, Optional&lt;Employee&gt;&gt; topPaid = employees.stream()
 
     String clean = input.replaceAll("[^A-Za-z0-9]", "").toLowerCase();
 
-    int left = 0;
-    int right = clean.length() - 1;
-
-    while (left &lt; right) {
-        if (clean.charAt(left++) != clean.charAt(right--)) {
+    for (int left = 0, right = clean.length() - 1; left &lt; right; left++, right--) {
+        if (clean.charAt(left) != clean.charAt(right)) {
             return false;
         }
     }
@@ -2745,6 +2743,7 @@ Iterator&lt;String&gt; it = suites.iterator();
 while (it.hasNext()) {
     if (it.next().equals("cart")) it.remove();
 }</code></pre>
+      <p><strong>On the loop:</strong> <code>removeIf</code> is the one to reach for. The iterator version is a <code>while</code> because it runs until the collection is exhausted rather than a fixed number of times &mdash; that's what <code>while</code> is for. Anything counted or index-based should be a <code>for</code>.</p>
       <p><strong>Nice detail to add:</strong> removing the <i>second-to-last</i> element often doesn't throw, because <code>hasNext()</code> returns false before the check runs. That's why it sometimes "works" and makes for a nasty intermittent bug.</p>
     </div></details>
   </div>
