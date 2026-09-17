@@ -38,3 +38,13 @@ that flags the weakest area.
 The project the Framework tab walks through lives at
 **[epam-prep-framework](https://github.com/Aishwariyaj23/epam-prep-framework)** —
 Selenium 4, TestNG and REST Assured, with `run.cmd` to launch it.
+
+---
+
+## 🛠 [The SDET Depth Pack](https://aishwariyaj23.github.io/epam-prep/sdet.html) — separate prep, Senior SDET track
+
+A different pack for a different role: weighted toward **API/REST Assured depth,
+Cucumber/BDD, and CI/CD + Docker + Grid**, with a three-week plan, a design-round
+framework, 20 coding problems and 18 defect drills.
+
+Java and Selenium are a keep-sharp track here rather than the main event.
