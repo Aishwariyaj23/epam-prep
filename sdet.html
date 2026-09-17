@@ -1,0 +1,2519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+  /* Baseline the hosted version supplies; baked in here so this file is self-contained. */
+  :root{
+    color-scheme: light dark;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  html{ -webkit-text-size-adjust:100%; }
+  body{ margin:0; font:14px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background:#faf9f7; }
+  img{ max-width:100%; }
+  [hidden]{ display:none !important; }
+</style>
+<title>SDET Depth Pack</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=JetBrains+Mono:wght@400;600&display=swap">
+
+<style>
+  :root{
+    --paper:#F1F3F3; --surface:#FFFFFF; --surface-2:#E4E8E9;
+    --ink:#14191A; --ink-2:#414A4C; --muted:#737E80;
+    --line:#D5DBDC; --line-2:#BDC5C7;
+    --accent:#10606B; --accent-soft:#DDEDEF;
+    --fail:#A33A26; --fail-soft:#F7E6E1;
+    --warn:#87620F; --warn-soft:#F4EBD5;
+    --ok:#2C6B43; --ok-soft:#E1EFE5;
+    --code-bg:#121A1C; --code-fg:#D6E1E3;
+    --code-kw:#6FC5D4; --code-str:#DFB278; --code-com:#69797C;
+    --code-ann:#A9B4E8; --code-num:#D69FC3;
+    --shadow:0 1px 2px rgba(20,25,26,.06), 0 6px 20px -12px rgba(20,25,26,.24);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#101415; --surface:#181E1F; --surface-2:#222A2B;
+      --ink:#E6EBEB; --ink-2:#B1BABB; --muted:#869092;
+      --line:#2A3233; --line-2:#3A4344;
+      --accent:#4FB8C7; --accent-soft:#15343A;
+      --fail:#E08A70; --fail-soft:#36211B;
+      --warn:#D6AB55; --warn-soft:#382E15;
+      --ok:#6CBF8B; --ok-soft:#183024;
+      --code-bg:#0B1112;
+      --shadow:0 1px 2px rgba(0,0,0,.4), 0 6px 20px -12px rgba(0,0,0,.75);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#101415; --surface:#181E1F; --surface-2:#222A2B;
+    --ink:#E6EBEB; --ink-2:#B1BABB; --muted:#869092;
+    --line:#2A3233; --line-2:#3A4344;
+    --accent:#4FB8C7; --accent-soft:#15343A;
+    --fail:#E08A70; --fail-soft:#36211B;
+    --warn:#D6AB55; --warn-soft:#382E15;
+    --ok:#6CBF8B; --ok-soft:#183024;
+    --code-bg:#0B1112;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 6px 20px -12px rgba(0,0,0,.75);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:"Newsreader",Georgia,serif;font-size:16px;line-height:1.56;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{font-family:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif;margin:0;text-wrap:balance;letter-spacing:-.011em;}
+  .mono{font-family:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;}
+
+  header.top{
+    position:sticky;top:env(safe-area-inset-top, 0px);z-index:40;
+    background:color-mix(in srgb, var(--paper) 93%, transparent);
+    backdrop-filter:blur(10px);border-bottom:1px solid var(--line);
+  }
+  .top-in{max-width:1000px;margin:0 auto;padding:12px 20px 0;}
+  .brandrow{display:flex;flex-wrap:wrap;align-items:baseline;gap:9px 15px;}
+  .brandrow h1{font-size:18.5px;font-weight:700;}
+  .who{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+  .spacer{flex:1 1 auto;}
+  .meter{display:flex;align-items:center;gap:11px;padding:10px 0 11px;flex-wrap:wrap;}
+  .bar{flex:1 1 170px;height:5px;background:var(--surface-2);border-radius:99px;overflow:hidden;min-width:110px;}
+  .bar span{display:block;height:100%;width:0;background:var(--accent);transition:width .25s ease;}
+  .pct{font-family:"JetBrains Mono",monospace;font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;}
+  .wbtn:focus-visible,.tab:focus-visible,summary:focus-visible,input:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+
+  nav.tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;margin:0 -20px;padding:0 20px;}
+  nav.tabs::-webkit-scrollbar{display:none;}
+  .tab{
+    font-family:"IBM Plex Sans",sans-serif;font-size:13px;font-weight:600;
+    background:none;border:0;border-bottom:2px solid transparent;
+    color:var(--muted);padding:9px 11px;cursor:pointer;white-space:nowrap;
+  }
+  .tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent);}
+
+  main{max-width:1000px;margin:0 auto;padding:28px 20px 90px;}
+  section.pane[hidden]{display:none!important;}
+  .lede{font-size:17.5px;color:var(--ink-2);max-width:62ch;margin:0 0 26px;}
+  .lede em{color:var(--ink);font-style:italic;}
+  .eyebrow{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 6px;}
+  h2.sec{font-size:22.5px;font-weight:700;margin:0 0 5px;}
+  h3.sub{font-size:17px;font-weight:600;margin:32px 0 6px;}
+  .sec-note{color:var(--muted);font-size:15.5px;margin:0 0 20px;max-width:64ch;}
+  .block{margin-bottom:40px;}
+  hr.rule{border:0;border-top:1px solid var(--line);margin:34px 0;}
+  p{margin:0 0 12px;max-width:68ch;}
+  ul,ol{margin:0 0 12px;padding-left:20px;max-width:68ch;}
+  li{margin-bottom:5px;}
+  strong{font-weight:500;color:var(--ink);}
+  code{font-family:"JetBrains Mono",monospace;font-size:12.8px;background:var(--surface-2);padding:1.5px 5px;border-radius:4px;color:var(--ink);}
+
+  pre{
+    margin:13px 0;background:var(--code-bg);color:var(--code-fg);border-radius:8px;
+    padding:14px 16px;overflow-x:auto;font-family:"JetBrains Mono",monospace;
+    font-size:12.4px;line-height:1.62;border:1px solid color-mix(in srgb, var(--code-bg) 80%, #69797C);
+  }
+  pre code{font-family:inherit;background:none;padding:0;color:inherit;white-space:pre;font-size:12.4px;}
+  .k{color:var(--code-kw);} .s{color:var(--code-str);} .c{color:var(--code-com);font-style:italic;}
+  .a{color:var(--code-ann);} .nm{color:var(--code-num);}
+  .filetag{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.05em;color:var(--muted);display:block;margin:15px 0 -7px;}
+
+  .say{border-left:2px solid var(--accent);background:var(--accent-soft);padding:11px 14px;border-radius:0 6px 6px 0;margin:13px 0;font-size:15.5px;}
+  .say b{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);display:block;margin-bottom:4px;font-weight:600;}
+  .say p:last-child{margin-bottom:0;}
+  .trap{border-left:2px solid var(--warn);background:var(--warn-soft);padding:11px 14px;border-radius:0 6px 6px 0;margin:13px 0;font-size:15.5px;}
+  .trap b{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--warn);display:block;margin-bottom:4px;font-weight:600;}
+  .trap p:last-child{margin-bottom:0;}
+  .breaks{border-left:2px solid var(--fail);background:var(--fail-soft);padding:11px 14px;border-radius:0 6px 6px 0;margin:13px 0;font-size:15.5px;}
+  .breaks b{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--fail);display:block;margin-bottom:4px;font-weight:600;}
+  .breaks p:last-child{margin-bottom:0;}
+
+  .qa{border-top:1px solid var(--line);}
+  details.q{border-bottom:1px solid var(--line);}
+  details.q > summary{
+    list-style:none;cursor:pointer;padding:13px 4px 13px 0;
+    display:grid;grid-template-columns:34px 1fr 18px;gap:10px;align-items:baseline;
+  }
+  details.q > summary::-webkit-details-marker{display:none;}
+  .qn{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;}
+  .qt{font-family:"IBM Plex Sans",sans-serif;font-size:15.5px;font-weight:600;line-height:1.4;}
+  .chev{color:var(--line-2);font-size:14px;transition:transform .15s ease;justify-self:end;}
+  details.q[open] .chev{transform:rotate(90deg);color:var(--accent);}
+  .ans{padding:0 4px 20px 44px;max-width:74ch;color:var(--ink-2);}
+  .ans > :first-child{margin-top:0;}
+  @media (max-width:560px){ .ans{padding-left:4px;} }
+
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:13px;margin:16px 0;}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:15px 17px;box-shadow:var(--shadow);}
+  .card h4{font-size:14.5px;font-weight:600;margin-bottom:7px;}
+  .card p,.card ul{font-size:14.5px;color:var(--ink-2);margin:0;}
+  .card ul{padding-left:17px;} .card li{margin-bottom:4px;}
+
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface);margin:14px 0;}
+  table{width:100%;border-collapse:collapse;font-size:14.2px;}
+  th,td{text-align:left;padding:9px 13px;border-bottom:1px solid var(--line);vertical-align:top;}
+  th{font-family:"IBM Plex Sans",sans-serif;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:600;}
+  tr:last-child td{border-bottom:0;}
+  td.mono{font-size:12.4px;white-space:nowrap;}
+
+  .weeks{display:flex;flex-direction:column;gap:14px;}
+  .wk{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:17px 19px;box-shadow:var(--shadow);}
+  .wkhead{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:4px;}
+  .wkhead .n{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);font-weight:600;}
+  .wkhead h3{font-size:17.5px;font-weight:700;margin:0;}
+  .wk .why{font-size:15px;color:var(--muted);font-style:italic;margin:0 0 11px;}
+  ul.tasks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px;}
+  ul.tasks li{display:flex;gap:9px;align-items:flex-start;font-size:15.2px;line-height:1.45;}
+  ul.tasks input{appearance:none;width:15px;height:15px;flex:0 0 15px;margin-top:4px;border:1.5px solid var(--line-2);border-radius:4px;background:var(--surface);cursor:pointer;}
+  ul.tasks input:checked{background:var(--accent);border-color:var(--accent);}
+  ul.tasks input:checked::after{content:"";display:block;width:4px;height:8px;margin:1px auto 0;border:solid var(--surface);border-width:0 1.8px 1.8px 0;transform:rotate(43deg);}
+  ul.tasks label{cursor:pointer;color:var(--ink-2);}
+  ul.tasks input:checked + label{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--line-2);}
+
+  .drill{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-bottom:15px;box-shadow:var(--shadow);}
+  .drill-head{display:flex;gap:9px;align-items:baseline;flex-wrap:wrap;margin-bottom:3px;}
+  .badge{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:3px 7px;border-radius:4px;background:var(--fail-soft);color:var(--fail);font-weight:600;}
+  .badge.lang{background:var(--surface-2);color:var(--muted);}
+  .drill h4{font-size:15.5px;font-weight:600;}
+  .drill .prompt{font-size:14.5px;color:var(--muted);margin:4px 0 0;font-style:italic;}
+  details.fix{margin-top:9px;}
+  details.fix > summary{list-style:none;cursor:pointer;font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);border:1px dashed var(--line-2);border-radius:6px;padding:6px 11px;display:inline-block;font-weight:600;}
+  details.fix > summary::-webkit-details-marker{display:none;}
+  details.fix[open] > summary{border-style:solid;border-color:var(--accent);}
+  .fixbody{padding-top:5px;max-width:74ch;color:var(--ink-2);}
+  .verdict{font-size:15.2px;margin:11px 0 0;}
+  .verdict b{color:var(--fail);font-weight:500;}
+
+  .grouphead{display:flex;align-items:baseline;gap:12px;margin:30px 0 14px;border-bottom:1px solid var(--line-2);padding-bottom:7px;}
+  .grouphead h3{font-size:16px;font-weight:700;margin:0;}
+  .grouphead span{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 20px;}
+  .ghost{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--line-2);background:var(--surface);color:var(--ink-2);padding:7px 12px;border-radius:6px;cursor:pointer;font-weight:600;}
+  .ghost:hover{border-color:var(--accent);color:var(--accent);}
+  .cplx{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--muted);margin-top:9px;display:block;}
+  .note{font-size:14.5px;color:var(--ink-2);margin:11px 0 0;}
+  .note b{color:var(--ink);font-weight:500;}
+  .pill-row{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0;}
+  .pill{font-family:"JetBrains Mono",monospace;font-size:11px;padding:3px 9px;border-radius:999px;border:1px solid var(--line-2);color:var(--ink-2);}
+
+  ol.flow{counter-reset:step;list-style:none;padding:0;margin:16px 0;max-width:68ch;}
+  ol.flow li{counter-increment:step;position:relative;padding-left:40px;margin-bottom:12px;font-size:15.2px;color:var(--ink-2);}
+  ol.flow li::before{
+    content:counter(step);position:absolute;left:0;top:1px;width:25px;height:25px;border-radius:50%;
+    background:var(--accent-soft);color:var(--accent);font-family:"JetBrains Mono",monospace;
+    font-size:11.5px;font-weight:600;display:flex;align-items:center;justify-content:center;
+  }
+
+  footer{max-width:1000px;margin:0 auto;padding:0 20px 60px;color:var(--muted);font-size:13.5px;}
+  @media (prefers-reduced-motion: reduce){*{transition:none!important;}}
+
+  @media print{
+    header.top, footer, nav.tabs{display:none !important;}
+    main{padding:0 !important;max-width:none !important;}
+    body{background:#fff !important;}
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-in">
+    <div class="brandrow">
+      <h1>SDET Depth Pack</h1>
+      <span class="who">Senior SDET &middot; API &middot; BDD &middot; CI/CD</span>
+      <span class="spacer"></span>
+    </div>
+    <div class="meter">
+      <span class="bar"><span id="barfill"></span></span>
+      <span class="pct" id="pct">0 / 0</span>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button class="tab" role="tab" aria-selected="true"  data-pane="plan">Plan</button>
+      <button class="tab" role="tab" aria-selected="false" data-pane="api">API Depth</button>
+      <button class="tab" role="tab" aria-selected="false" data-pane="bdd">Cucumber / BDD</button>
+      <button class="tab" role="tab" aria-selected="false" data-pane="cicd">CI/CD &amp; Docker</button>
+      <button class="tab" role="tab" aria-selected="false" data-pane="design">Design Round</button>
+      <button class="tab" role="tab" aria-selected="false" data-pane="coding">Coding</button>
+      <button class="tab" role="tab" aria-selected="false" data-pane="core">Java &amp; Selenium</button>
+      <button class="tab" role="tab" aria-selected="false" data-pane="debug">Spot the Bug</button>
+      <button class="tab" role="tab" aria-selected="false" data-pane="sheet">Carry Sheet</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<section class="pane" id="pane-plan" role="tabpanel">
+  <p class="lede">Three weeks, built for a <em>Senior SDET</em> loop rather than a lead one: more code, more design, more depth on the three areas you picked. Java and Selenium get a keep-sharp track &mdash; they'll still come up, but they're not where this interview is won.</p>
+
+  <div class="block">
+    <p class="eyebrow">Read this first</p>
+    <h2 class="sec">What a Senior SDET loop actually tests</h2>
+    <p class="sec-note">It differs from a lead loop in a specific way, and that difference decides how to spend three weeks.</p>
+    <div class="grid2">
+      <div class="card">
+        <h4>You will write real code</h4>
+        <p>Not "explain a page object" &mdash; actually write a retry helper, a polling utility, a stream pipeline, usually on a shared screen. This is the biggest gap for anyone who's been reviewing more than writing.</p>
+      </div>
+      <div class="card">
+        <h4>You'll get a design round</h4>
+        <p>"How would you test a URL shortener?" Open-ended, no right answer, scored on structure. Most candidates ramble. There's a repeatable frame for it in <b>Design Round</b>.</p>
+      </div>
+      <div class="card">
+        <h4>Depth beats breadth</h4>
+        <p>They pick one thing you claim and go three questions deep. Knowing REST Assured's GPath and object-mapper config beats naming five tools you touched once.</p>
+      </div>
+      <div class="card">
+        <h4>Infra fluency is assumed</h4>
+        <p>Docker, a pipeline file, a Grid. At senior level "the DevOps team handles that" is a losing answer &mdash; you're expected to own the test infrastructure.</p>
+      </div>
+    </div>
+  </div>
+
+  <hr class="rule">
+
+  <div class="block">
+    <p class="eyebrow">Three weeks</p>
+    <h2 class="sec">The plan</h2>
+    <p class="sec-note">Roughly 8&ndash;10 hours a week. Progress saves in this browser. The <span class="mono" style="color:var(--fail)">&#9733;</span> item is the one to do if you only do one thing that week.</p>
+
+    <div class="weeks">
+
+      <article class="wk">
+        <div class="wkhead"><span class="n">Week 1</span><h3>API depth, and writing code again</h3></div>
+        <p class="why">The area you weighted highest, and the one with the most senior-level surface.</p>
+        <ul class="tasks">
+          <li><input type="checkbox"><label><span class="mono" style="color:var(--fail)">&#9733;</span> Read the whole <b>API Depth</b> tab; write every snippet out by hand at least once</label></li>
+          <li><input type="checkbox"><label>Serialisation properly: POJOs, Jackson annotations, generics via <code>TypeRef</code>, custom ObjectMapper config</label></li>
+          <li><input type="checkbox"><label><b>GPath</b> until it's automatic &mdash; <code>findAll</code>, <code>collect</code>, <code>sum()</code>, <code>max</code>. The single best REST Assured differentiator</label></li>
+          <li><input type="checkbox"><label>Stand up <b>WireMock</b> locally: stub, fault-inject, verify a request, drive a scenario</label></li>
+          <li><input type="checkbox"><label>Build a small API suite from scratch &mdash; specs, auth chaining, schema validation, negative cases</label></li>
+          <li><input type="checkbox"><label><b>Coding</b> tab, problems 01&ndash;10, in an editor, 20 minutes each</label></li>
+        </ul>
+      </article>
+
+      <article class="wk">
+        <div class="wkhead"><span class="n">Week 2</span><h3>BDD and the pipeline</h3></div>
+        <p class="why">Cucumber is easy to use and hard to defend. The interesting questions are all about when not to use it.</p>
+        <ul class="tasks">
+          <li><input type="checkbox"><label><span class="mono" style="color:var(--fail)">&#9733;</span> <b>Cucumber / BDD</b> tab end to end &mdash; especially state sharing and the anti-patterns</label></li>
+          <li><input type="checkbox"><label>Write a feature with a Background, a Scenario Outline, a Data Table and tagged hooks. Run it in parallel and fix what breaks</label></li>
+          <li><input type="checkbox"><label>Have a real answer ready for "when is Cucumber <i>not</i> worth it?"</label></li>
+          <li><input type="checkbox"><label><b>CI/CD &amp; Docker</b> tab; write a Jenkinsfile and a GitHub Actions workflow from memory</label></li>
+          <li><input type="checkbox"><label>Run a Dockerised Grid with docker-compose and point a suite at it</label></li>
+          <li><input type="checkbox"><label>Try <b>Testcontainers</b> once &mdash; it comes up constantly at senior level and few candidates have used it</label></li>
+          <li><input type="checkbox"><label><b>Coding</b> tab, problems 11&ndash;20</label></li>
+        </ul>
+      </article>
+
+      <article class="wk">
+        <div class="wkhead"><span class="n">Week 3</span><h3>Design, defects, rehearsal</h3></div>
+        <p class="why">Consolidation. No new tools after this point.</p>
+        <ul class="tasks">
+          <li><input type="checkbox"><label><span class="mono" style="color:var(--fail)">&#9733;</span> <b>Design Round</b> &mdash; all six prompts out loud, 10 minutes each, against a timer</label></li>
+          <li><input type="checkbox"><label><b>Spot the Bug</b> &mdash; all 18 drills, naming the defect before revealing</label></li>
+          <li><input type="checkbox"><label><b>Java &amp; Selenium</b> keep-sharp pass &mdash; one session, not more</label></li>
+          <li><input type="checkbox"><label>Write three project stories with real numbers: what you built, what broke, what you measured</label></li>
+          <li><input type="checkbox"><label>Full mock: 20 min coding, 20 min API/BDD depth, 20 min design, 10 min pipeline</label></li>
+          <li><input type="checkbox"><label>Re-read your CV and be ready to defend every line &mdash; including the repos on your GitHub</label></li>
+          <li><input type="checkbox"><label>Print the <b>Carry Sheet</b></label></li>
+        </ul>
+      </article>
+
+    </div>
+  </div>
+
+  <div class="block">
+    <p class="eyebrow">An edge you already have</p>
+    <h2 class="sec">Your GitHub is part of the interview</h2>
+    <p>You have public repos for Selenium, RestAssured, Cucumber and load testing. A senior interviewer will look. That's an advantage only if the top few are tidy, so before you apply anywhere:</p>
+    <ul>
+      <li>Give the three best repos a real <strong>README</strong>: what it is, how to run it, one decision you made and why</li>
+      <li>Archive or delete the near-duplicates &mdash; you have two RestAssured repos and two cucumber ones</li>
+      <li>Check none of them contain credentials, internal URLs or client names</li>
+      <li>Pin the three you'd actually want discussed</li>
+    </ul>
+    <div class="say"><b>Why it's worth an hour</b><p>"Walk me through something you built" is a guaranteed question. Answering it with a URL they can open, that runs, is a far stronger position than describing a framework from memory.</p></div>
+  </div>
+</section>
+
+<section class="pane" id="pane-api" role="tabpanel" hidden>
+  <p class="eyebrow">Weighted heaviest</p>
+  <h2 class="sec">API depth</h2>
+  <p class="sec-note">This assumes you already know <code>given/when/then</code>. Everything here is the layer above that &mdash; the material that separates someone who uses REST Assured from someone who owns an API test estate.</p>
+
+  <div class="qa">
+
+    <details class="q"><summary><span class="qn mono">01</span><span class="qt">GPath &mdash; the thing most REST Assured users never learn</span><span class="chev">&rsaquo;</span></summary>
+    <div class="ans">
+      <p>The string inside <code>body("...")</code> isn't JsonPath &mdash; it's <strong>Groovy GPath</strong>. That means you can run closures inside the assertion, and filter, project and aggregate without pulling the response into Java first.</p>
+<pre><code class="java">// every user over 30, by name
+.body("users.findAll { it.age &gt; 30 }.name", hasItems("Meera", "Karthik"))
+
+// the one matching a condition, then a field off it
+.body("users.find { it.email == 'a@test.com' }.id", equalTo(101))
+
+// projection
+.body("orders.items.flatten().sku", everyItem(notNullValue()))
+
+// aggregates - computed server-side data, checked in one line
+.body("orders.total.sum()", equalTo(4820))
+.body("orders.total.max()", lessThan(5000))
+.body("users.age.min()", greaterThanOrEqualTo(18))
+
+// count with a condition
+.body("users.findAll { it.active == true }.size()", equalTo(7))
+
+// sorting check, entirely in the assertion
+.body("products.price", equalTo(new ArrayList&lt;&gt;(response.path("products.price"))))</code></pre>
+      <div class="say"><b>Why it lands</b><p>"I use GPath closures so filtering happens in the assertion rather than in Java. It keeps the test declarative, and the failure message shows the actual collection rather than a boolean." Almost nobody says this.</p></div>
+      <div class="trap"><b>The gotcha</b><p>GPath's syntax is Groovy, not Java &mdash; <code>it</code> is the implicit variable, <code>==</code> compares by value, and single quotes are strings. And <code>.find</code> returns the first match while <code>.findAll</code> returns a list; mixing them up gives confusing type errors in the matcher.</p></div>
+    </div></details>
+
+    <details class="q"><summary><span class="qn mono">02</span><span class="qt">Deserialising generics &mdash; why <code>as(List.class)</code> isn't enough</span><span class="chev">&rsaquo;</span></summary>
+    <div class="ans">
+      <p>Java erases generic types at runtime, so <code>.as(List.class)</code> gives you a <code>List&lt;LinkedHashMap&gt;</code>, not a <code>List&lt;User&gt;</code>. You find out via a <code>ClassCastException</code> somewhere far from the cause.</p>
+<pre><code class="java">// wrong - compiles, then explodes later
+List&lt;User&gt; users = response.as(List.class);
+
+// right - TypeRef carries the generic type through
+List&lt;User&gt; users = response.as(new TypeRef&lt;List&lt;User&gt;&gt;() {});
+
+// or via jsonPath with a target type
+List&lt;User&gt; users = response.jsonPath().getList("data", User.class);
+
+// single object
+User user = response.as(User.class);</code></pre>
+      <p>Configure the mapper once, globally, rather than per call:</p>
+<pre><code class="java">RestAssured.config = RestAssuredConfig.config()
+    .objectMapperConfig(new ObjectMapperConfig()
+        .jackson2ObjectMapperFactory((type, charset) -&gt; {
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+            mapper.registerModule(new JavaTimeModule());
+            return mapper;
+        }));</code></pre>
+      <div class="trap"><b>Follow-up</b><p>"What happens when the API adds a field?" Without <code>FAIL_ON_UNKNOWN_PROPERTIES=false</code> (or <code>@JsonIgnoreProperties</code>), every test deserialising that payload breaks on a backwards-compatible change. And <code>NON_NULL</code> on serialisation matters too &mdash; otherwise your POJO sends explicit <code>null</code>s that a PATCH endpoint may treat as "clear this field".</p></div>
+    </div></details>
+
+    <details class="q"><summary><span class="qn mono">03</span><span class="qt">Filters &mdash; cross-cutting behaviour without touching every test</span><span class="chev">&rsaquo;</span></summary>
+    <div class="ans">
+      <p>A <code>Filter</code> wraps every request/response pair. It's where correlation IDs, timing, report attachments and conditional logging belong.</p>
+<pre><code class="java">public class CorrelationIdFilter implements Filter {
+
+    @Override
+    public Response filter(FilterableRequestSpecification req,
+                           FilterableResponseSpecification res,
+                           FilterContext ctx) {
+
+        String correlationId = UUID.randomUUID().toString();
+        req.header("X-Correlation-Id", correlationId);
+
+        long start = System.currentTimeMillis();
+        Response response = ctx.next(req, res);   // the call itself
+        long elapsed = System.currentTimeMillis() - start;
+
+        if (response.statusCode() &gt;= 400) {
+            System.out.printf("FAILED %s %s -> %d in %dms (correlation %s)%n",
+                    req.getMethod(), req.getURI(), response.statusCode(), elapsed, correlationId);
+        }
+        return response;
+    }
+}</code></pre>
+      <div class="say"><b>The senior point</b><p>"I put a correlation ID on every request from a filter. When an API test fails in CI, I can hand that ID to the backend team and they find the exact request in their logs. It turns 'the test failed' into 'here is your trace'."</p></div>
+      <p>Built-ins worth naming: <code>RequestLoggingFilter</code>, <code>ResponseLoggingFilter</code>, <code>ErrorLoggingFilter</code>, and Allure's <code>AllureRestAssured</code>.</p>
+    </div></details>
+
+    <details class="q"><summary><span class="qn mono">04</span><span class="qt">WireMock &mdash; testing what you can't reach</span><span class="chev">&rsaquo;</span></summary>
+    <div class="ans">
+      <p>A stub server standing in for a dependency you don't control. It answers three questions a real environment can't: <em>what if the dependency is slow, broken, or returns something weird?</em></p>
+<pre><code class="java">WireMockServer wm = new WireMockServer(options().port(8089));
+wm.start();
+
+// a normal stub
+wm.stubFor(get(urlPathEqualTo("/payments/status"))
+        .withQueryParam("id", equalTo("P-1001"))
+        .willReturn(okJson("{\"status\":\"SETTLED\"}")));
+
+// fault injection - the tests you cannot write against a real service
+wm.stubFor(get(urlPathEqualTo("/payments/slow"))
+        .willReturn(aResponse().withFixedDelay(5000)));
+
+wm.stubFor(get(urlPathEqualTo("/payments/broken"))
+        .willReturn(aResponse().withFault(Fault.CONNECTION_RESET_BY_PEER)));
+
+// stateful: first call PENDING, second call SETTLED
+wm.stubFor(get("/payments/1").inScenario("settle")
+        .whenScenarioStateIs(STARTED)
+        .willReturn(okJson("{\"status\":\"PENDING\"}"))
+        .willSetStateTo("done"));
+
+wm.stubFor(get("/payments/1").inScenario("settle")
+        .whenScenarioStateIs("done")
+        .willReturn(okJson("{\"status\":\"SETTLED\"}")));
+
+// verification - did our code actually call it, and how?
+wm.verify(exactly(1), postRequestedFor(urlEqualTo("/audit"))
+        .withRequestBody(matchingJsonPath("$.event", equalTo("PAYMENT_SETTLED"))));</code></pre>
+      <div class="say"><b>Say this</b><p>"Stubs let me test the failure paths &mdash; timeout, connection reset, malformed payload, 500 from a partner. Those are the branches that actually break in production, and you can't ask a real payment provider to fail on demand."</p></div>
+      <div class="trap"><b>The honest caveat they want to hear</b><p>Stubs test <i>your</i> handling of a contract you assumed. They can drift from reality. That's exactly the gap contract testing fills &mdash; next question.</p></div>
+    </div></details>
+
+    <details class="q"><summary><span class="qn mono">05</span><span class="qt">Contract testing &mdash; the senior differentiator</span><span class="chev">&rsaquo;</span></summary>
+    <div class="ans">
+      <p>In a microservices estate, integration tests are slow and flaky, and stubs silently drift from the real provider. <strong>Consumer-driven contract testing</strong> closes that gap: the consumer declares what it needs, and the provider's build verifies it still delivers it.</p>
+      <ol class="flow">
+        <li>The <strong>consumer</strong> writes a test against a mock provider; that run generates a <em>pact</em> file describing the expected interactions.</li>
+        <li>The pact is published to a <strong>broker</strong>.</li>
+        <li>The <strong>provider's</strong> pipeline replays those interactions against the real service.</li>
+        <li>If the provider breaks the contract, <em>the provider's build fails</em> &mdash; before the consumer ever sees it.</li>
+      </ol>
+      <div class="tablewrap"><table>
+        <tr><th></th><th>Catches</th><th>Misses</th></tr>
+        <tr><td>Schema validation</td><td>Shape/type changes in a response you already call</td><td>Whether the provider still behaves that way tomorrow</td></tr>
+        <tr><td>Stub + WireMock</td><td>Your handling of odd responses</td><td>Provider drift &mdash; the stub is your assumption</td></tr>
+        <tr><td><b>Contract test</b></td><td>Provider breaking a consumer's expectation, at provider build time</td><td>End-to-end business behaviour across several services</td></tr>
+      </table></div>
+      <div class="say"><b>Say this even if you haven't shipped it</b><p>"We didn't have contract testing, and the recurring pain was exactly what it solves &mdash; a provider changed a field and we found out in UAT. If I were setting up a microservices estate now, Pact plus a broker in both pipelines would be an early move."</p><p>Honest framing beats pretending. Interviewers can tell.</p></div>
+    </div></details>
+
+    <details class="q"><summary><span class="qn mono">06</span><span class="qt">Testing asynchronous APIs</span><span class="chev">&rsaquo;</span></summary>
+    <div class="ans">
+      <p>A POST returns 202 Accepted and the work finishes later. Sleeping is the wrong answer; so is asserting immediately.</p>
+<pre><code class="java">// Awaitility - poll a condition with a real timeout, no Thread.sleep
+await().atMost(30, SECONDS)
+       .pollInterval(2, SECONDS)
+       .pollDelay(1, SECONDS)
+       .untilAsserted(() -&gt;
+           given().spec(spec)
+           .when().get("/jobs/{id}", jobId)
+           .then().body("status", equalTo("COMPLETED")));</code></pre>
+      <p>The four async shapes and how each is tested:</p>
+      <ul>
+        <li><strong>Polling a status endpoint</strong> &mdash; Awaitility as above. Assert on the terminal state, and also that it doesn't sit in <code>PENDING</code> past the SLA.</li>
+        <li><strong>Webhook callback</strong> &mdash; stand up a WireMock endpoint as the callback target, then <code>verify()</code> it was called with the right payload.</li>
+        <li><strong>Message queue</strong> &mdash; publish, then consume from the output topic with a bounded timeout; assert on the message, not on a database side-effect if you can avoid it.</li>
+        <li><strong>Eventual DB state</strong> &mdash; poll the query, never a fixed sleep, and always assert the <em>absence</em> of the old value too.</li>
+      </ul>
+      <div class="trap"><b>Follow-up</b><p>"How do you stop async tests being flaky?" Unique test data per run so a slow previous run can't be mistaken for this one, a generous but bounded timeout, and an assertion on the terminal state rather than an intermediate one.</p></div>
+    </div></details>
+
+    <details class="q"><summary><span class="qn mono">07</span><span class="qt">Auth beyond a bearer token</span><span class="chev">&rsaquo;</span></summary>
+    <div class="ans">
+<pre><code class="java">// OAuth2 client credentials - the common machine-to-machine flow
+String token = given()
+        .contentType(ContentType.URLENC)
+        .formParam("grant_type", "client_credentials")
+        .formParam("client_id", clientId)
+        .formParam("client_secret", clientSecret)
+        .formParam("scope", "orders.read orders.write")
+    .when().post(tokenUrl)
+    .then().statusCode(200)
+        .extract().path("access_token");
+
+// built-ins
+given().auth().preemptive().basic(user, pass)   // sends immediately, no 401 round-trip
+given().auth().basic(user, pass)                // waits to be challenged
+given().auth().oauth2(token)
+given().auth().digest(user, pass)</code></pre>
+      <p>Three things worth raising unprompted:</p>
+      <ul>
+        <li><strong>Cache the token</strong> per suite, not per test, and refresh on expiry &mdash; not on a timer you guessed.</li>
+        <li><strong>Test the authorisation matrix</strong>, not just authentication. For each endpoint × role: allowed, forbidden (403), or not-found-by-design (404 to avoid leaking existence). This is where real security bugs live.</li>
+        <li><strong>Never commit secrets.</strong> Read from environment variables in CI; the properties file holds the key name, not the value.</li>
+      </ul>
+      <div class="trap"><b>Follow-up</b><p>"Difference between preemptive and challenged basic auth?" Preemptive sends the Authorization header on the first request. Non-preemptive waits for a 401 and then retries &mdash; which doubles the request count and breaks against servers that don't challenge.</p></div>
+    </div></details>
+
+    <details class="q"><summary><span class="qn mono">08</span><span class="qt">Test data: the problem that actually breaks API suites</span><span class="chev">&rsaquo;</span></summary>
+    <div class="ans">
+      <p>Most "flaky API tests" are really test-data collisions. Four strategies, roughly in order of preference:</p>
+      <ul>
+        <li><strong>Create what you need, per test, via API.</strong> Self-contained, parallel-safe, and it exercises the create path as a bonus.</li>
+        <li><strong>Unique identifiers always</strong> &mdash; suffix emails and references with a UUID or timestamp so two runs never touch the same record.</li>
+        <li><strong>Clean up in teardown</strong>, and make cleanup idempotent so a failure mid-test doesn't poison the next run.</li>
+        <li><strong>Seeded reference data</strong> for things you can't create (a product catalogue) &mdash; read-only, never mutated by tests.</li>
+      </ul>
+      <p>A builder keeps the intent visible and the noise hidden:</p>
+<pre><code class="java">public static Booking.BookingBuilder aBooking() {
+    return Booking.builder()
+            .firstname("Test")
+            .lastname("User-" + UUID.randomUUID().toString().substring(0, 8))
+            .totalprice(100)
+            .depositpaid(true)
+            .bookingdates(new BookingDates("2026-10-01", "2026-10-05"));
+}
+
+// each test states only what it cares about
+Booking highValue = aBooking().totalprice(50_000).build();
+Booking noDeposit = aBooking().depositpaid(false).build();</code></pre>
+      <div class="say"><b>Say this</b><p>"Shared fixtures are the thing that stops you parallelising. Every test creating its own data costs a few hundred milliseconds and buys you the ability to run the suite forty ways at once."</p></div>
+    </div></details>
+
+    <details class="q"><summary><span class="qn mono">09</span><span class="qt">What do you test in an API, at senior level?</span><span class="chev">&rsaquo;</span></summary>
+    <div class="ans">
+      <div class="tablewrap"><table>
+        <tr><th>Layer</th><th>What you're actually checking</th></tr>
+        <tr><td>Status &amp; headers</td><td>Correct code, Content-Type, Location on create, cache and CORS headers where they matter</td></tr>
+        <tr><td>Body</td><td>Values, types, and the <b>schema</b> &mdash; schema catches what you forgot to assert</td></tr>
+        <tr><td>Negative</td><td>Missing required fields, wrong types, oversized payloads, malformed JSON, unknown fields</td></tr>
+        <tr><td>Boundary</td><td>Min/max lengths, zero, negative numbers, unicode, emoji, SQL-ish and HTML-ish strings</td></tr>
+        <tr><td>AuthN / AuthZ</td><td>No token, expired token, valid token wrong role, another tenant's resource id (<b>IDOR</b>)</td></tr>
+        <tr><td>Persistence</td><td>POST then GET &mdash; was it actually stored, or only acknowledged?</td></tr>
+        <tr><td>Idempotency</td><td>Double-submit a POST with an idempotency key; PUT twice and compare</td></tr>
+        <tr><td>Concurrency</td><td>Two parallel updates to the same resource &mdash; last-write-wins, or a 409?</td></tr>
+        <tr><td>Contract</td><td>Schema/pact, so a provider change fails their build and not your UAT</td></tr>
+        <tr><td>Performance sanity</td><td><code>time(lessThan(...))</code> as a smoke signal &mdash; not a substitute for a load test</td></tr>
+      </table></div>
+      <div class="say"><b>The two that mark you out</b><p><strong>IDOR</strong> (fetch another tenant's id with your valid token &mdash; should be 403/404, is often 200) and <strong>mass assignment</strong> (POST a body containing <code>"role":"admin"</code> and see whether the server accepts a field it should ignore). Both are real, both are cheap to test, and very few candidates mention them.</p></div>
+    </div></details>
+
+    <details class="q"><summary><span class="qn mono">10</span><span class="qt">Schema validation, and where it fits</span><span class="chev">&rsaquo;</span></summary>
+    <div class="ans">
+<pre><code class="java">import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
+
+given().spec(spec)
+.when().get("/v1/users/101")
+.then().statusCode(200)
+    .body(matchesJsonSchemaInClasspath("schemas/user-schema.json"));</code></pre>
+      <p>Field assertions check what you thought of. A schema checks the <em>shape</em> &mdash; a field vanishing, a type flipping from number to string, a required field going null, an enum gaining a value.</p>
+      <div class="trap"><b>Follow-up worth pre-empting</b><p>"Where do the schemas come from?" Ideally generated from the provider's OpenAPI spec and refreshed in CI, not hand-written and left to rot. A hand-maintained schema that nobody updates is worse than none, because it fails for the wrong reason and gets muted.</p></div>
+    </div></details>
+
+    <details class="q"><summary><span class="qn mono">11</span><span class="qt">Debugging an API test that fails only in CI</span><span class="chev">&rsaquo;</span></summary>
+    <div class="ans">
+      <p>A structured answer, which is what's actually being scored:</p>
+      <ol class="flow">
+        <li><strong>Get the real request.</strong> <code>log().ifValidationFails()</code> or a logging filter &mdash; then reproduce it as a <code>curl</code> command. Half the time the difference is a header.</li>
+        <li><strong>Compare environments.</strong> Base URI, credentials, feature flags, data. CI usually points somewhere subtly different.</li>
+        <li><strong>Check for data collision.</strong> Does it fail only when run with the rest of the suite? Then it's shared state, not the endpoint.</li>
+        <li><strong>Check rate limiting.</strong> A 429 under parallel load looks exactly like flakiness.</li>
+        <li><strong>Check timing.</strong> CI machines are slower; an async operation that finished locally may not have there.</li>
+        <li><strong>Correlate with server logs</strong> via the correlation ID from the filter.</li>
+      </ol>
+      <div class="say"><b>Say this</b><p>"The first thing I do is turn the failing request into a curl I can paste into a terminal. Once it reproduces outside the framework, it's an ordinary bug rather than a test mystery."</p></div>
+    </div></details>
+
+    <details class="q"><summary><span class="qn mono">12</span><span class="qt">REST Assured gotchas worth knowing cold</span><span class="chev">&rsaquo;</span></summary>
+    <div class="ans">
+      <div class="tablewrap"><table>
+        <tr><th>Symptom</th><th>Cause</th></tr>
+        <tr><td class="mono">415</td><td>Body sent with no <code>contentType</code></td></tr>
+        <tr><td class="mono">406 / 418 / odd 4xx</td><td><code>setAccept(ContentType.JSON)</code> sends a multi-value Accept header some servers reject &mdash; pin the literal <code>application/json</code></td></tr>
+        <tr><td>Matcher never matches</td><td><code>equalTo("101")</code> against numeric JSON. JsonPath returns Integer &mdash; and a big id comes back as Long, so <code>equalTo(101)</code> fails too</td></tr>
+        <tr><td class="mono">PKIX path building failed</td><td>Self-signed cert or a corporate TLS proxy &mdash; <code>relaxedHTTPSValidation()</code>, or trust the CA properly</td></tr>
+        <tr><td>Query params double-encoded</td><td>Already-encoded values plus RA's encoding &mdash; <code>.urlEncodingEnabled(false)</code></td></tr>
+        <tr><td><code>ClassCastException</code> on a list</td><td><code>as(List.class)</code> instead of <code>TypeRef</code></td></tr>
+        <tr><td>Deserialisation breaks on a new field</td><td>Missing <code>FAIL_ON_UNKNOWN_PROPERTIES=false</code></td></tr>
+        <tr><td>PATCH wipes fields</td><td>POJO serialising nulls &mdash; set <code>Include.NON_NULL</code></td></tr>
+        <tr><td>Tests pass alone, fail together</td><td>Shared test data, or a token cached past expiry</td></tr>
+      </table></div>
+    </div></details>
+
+  </div>
+</section>
+
+<section class="pane" id="pane-bdd" role="tabpanel" hidden>
+  <p class="eyebrow">Easy to use, hard to defend</p>
+  <h2 class="sec">Cucumber &amp; BDD</h2>
+  <p class="sec-note">Anyone can write a step definition. The senior questions are all about <em>state</em>, <em>parallelism</em> and <em>whether you should be using it at all</em>. Weight your prep accordingly.</p>
+
+  <div class="qa">
+
+    <details class="q"><summary><span class="qn mono">01</span><span class="qt">Gherkin, and the parts people get wrong</span><span class="chev">&rsaquo;</span></summary>
+    <div class="ans">
+<pre><code class="java">Feature: Booking cancellation
+  As a customer
+  I want to cancel a booking
+  So that I am not charged for a stay I will not take
+
+  Background:
+    Given I am authenticated as a customer
+    And a confirmed booking exists
+
+  @smoke @cancellation
+  Scenario: Cancelling inside the free window is refunded in full
+    When I cancel the booking 5 days before check-in
+    Then the booking status is "CANCELLED"
+    And a refund of 100% is issued
+
+  @regression
+  Scenario Outline: Refund depends on how late the cancellation is
+    When I cancel the booking &lt;days&gt; days before check-in
+    Then a refund of &lt;percent&gt;% is issued
+
+    Examples:
+      | days | percent |
+      |   10 |     100 |
+      |    3 |      50 |
+      |    0 |       0 |
+
+  Scenario: Cancellation reasons are recorded
+    When I cancel with the following details:
+      | reason      | Change of plans |
+      | notifyEmail | true            |
+    Then the cancellation reason is stored</code></pre>
+      <ul>
+        <li><strong>Background</strong> runs before <em>every</em> scenario in the file. Keep it to preconditions, never assertions.</li>
+        <li><strong>Scenario Outline + Examples</strong> is for the same behaviour with different data. If the rows need different <em>steps</em>, they're different scenarios.</li>
+        <li><strong>Data Table</strong> for structured input; <strong>Doc String</strong> (<code>"""</code>) for a blob like a JSON payload.</li>
+        <li><strong>Tags</strong> drive both selection and hooks. Keep them few and meaningful.</li>
+      </ul>
+      <div class="trap"><b>The thing panels look for</b><p>Declarative, not imperative. <code>When I cancel the booking</code> is a behaviour. <code>When I click the "Cancel" button and wait 2 seconds and click "Confirm"</code> is a script with Gherkin punctuation &mdash; and it breaks every time the UI moves.</p></div>
+    </div></details>
+
+    <details class="q"><summary><span class="qn mono">02</span><span class="qt">Sharing state between steps &mdash; the question that separates people</span><span class="chev">&rsaquo;</span></summary>
+    <div class="ans">
+      <p>Step definitions live in different classes, but a scenario needs to carry data across them. <strong>Static fields are the wrong answer</strong> &mdash; they break parallel execution exactly the way a static WebDriver does.</p>
+      <p>The right answer is <strong>dependency injection with a scenario-scoped context</strong>. Cucumber-JVM ships PicoContainer; Spring and Guice modules also exist.</p>
+<pre><code class="java">// One instance per scenario, created and discarded by PicoContainer.
+public class ScenarioContext {
+
+    private final Map&lt;String, Object&gt; data = new HashMap&lt;&gt;();
+
+    public void set(String key, Object value) { data.put(key, value); }
+
+    @SuppressWarnings("unchecked")
+    public &lt;T&gt; T get(String key, Class&lt;T&gt; type) {
+        return (T) data.get(key);
+    }
+}
+
+// Constructor injection - Pico wires this automatically
+public class BookingSteps {
+
+    private final ScenarioContext context;
+    private final BookingApi api;
+
+    public BookingSteps(ScenarioContext context, BookingApi api) {
+        this.context = context;
+        this.api = api;
+    }
+
+    @Given("a confirmed booking exists")
+    public void aConfirmedBookingExists() {
+        Booking booking = api.create(aBooking().build());
+        context.set("bookingId", booking.getId());
+    }
+
+    @When("I cancel the booking {int} days before check-in")
+    public void iCancelTheBooking(int days) {
+        Integer id = context.get("bookingId", Integer.class);
+        context.set("response", api.cancel(id, days));
+    }
+}</code></pre>
+      <div class="say"><b>Say this</b><p>"Each step class takes the context through its constructor and PicoContainer gives every scenario a fresh instance. No statics, so scenarios can't leak into each other and the suite parallelises safely."</p></div>
+      <div class="trap"><b>Follow-up</b><p>"Why not just a static Map?" Because with <code>parallel</code> execution two scenarios on different threads read and write the same map &mdash; one overwrites the other's booking id and you get failures that move around between runs. Same class of bug as a static WebDriver.</p></div>
+    </div></details>
+
+    <details class="q"><summary><span class="qn mono">03</span><span class="qt">Hooks, and their order</span><span class="chev">&rsaquo;</span></summary>
+    <div class="ans">
+<pre><code class="java">public class Hooks {
+
+    @Before(order = 0)                  // lower order runs FIRST for @Before
+    public void loadConfig() { }
+
+    @Before(order = 10)
+    public void startDriver() { }
+
+    @Before("@api")                     // tagged - only for scenarios tagged @api
+    public void authenticate() { }
+
+    @BeforeStep
+    public void beforeEachStep() { }
+
+    @AfterStep
+    public void screenshotEachStep(Scenario scenario) {
+        if (scenario.isFailed()) { /* attach */ }
+    }
+
+    @After(order = 10)                  // higher order runs FIRST for @After
+    public void attachFailureEvidence(Scenario scenario) {
+        if (scenario.isFailed()) {
+            scenario.attach(screenshotBytes(), "image/png", scenario.getName());
+            scenario.log("Correlation id: " + context.get("correlationId", String.class));
+        }
+    }
+
+    @After(order = 0)                   // ...so teardown runs LAST
+    public void quitDriver() { }
+}</code></pre>
+      <div class="trap"><b>The detail they check</b><p><code>@Before</code> runs in <strong>ascending</strong> order; <code>@After</code> runs in <strong>descending</strong> order. Get it backwards and your screenshot hook fires after the browser has already quit &mdash; producing a null driver and a swallowed exception instead of evidence.</p></div>
+      <p><code>Scenario</code> gives you <code>isFailed()</code>, <code>getName()</code>, <code>getSourceTagNames()</code>, <code>attach()</code> and <code>log()</code> &mdash; that's how evidence gets into the report.</p>
+    </div></details>
+
+    <details class="q"><summary><span class="qn mono">04</span><span class="qt">The runner, tag expressions and parallel execution</span><span class="chev">&rsaquo;</span></summary>
+    <div class="ans">
+<pre><code class="java">// JUnit 5 platform runner (current approach)
+@Suite
+@IncludeEngines("cucumber")
+@SelectClasspathResource("features")
+@ConfigurationParameter(key = GLUE_PROPERTY_NAME,   value = "steps,hooks")
+@ConfigurationParameter(key = FILTER_TAGS_PROPERTY_NAME, value = "@smoke and not @wip")
+@ConfigurationParameter(key = PLUGIN_PROPERTY_NAME,
+        value = "pretty, html:target/cucumber.html, json:target/cucumber.json")
+@ConfigurationParameter(key = EXECUTION_MODE_FEATURE, value = "concurrent")
+public class RunCucumberTest { }</code></pre>
+      <p>Tag expressions are boolean: <code>@smoke and not @wip</code>, <code>@api or @db</code>, <code>not @manual</code>.</p>
+      <p>Parallelism differs by runner, and this is a common follow-up:</p>
+      <div class="tablewrap"><table>
+        <tr><th>Runner</th><th>How parallel works</th></tr>
+        <tr><td>JUnit 5 platform</td><td><code>junit-platform.properties</code>: <code>cucumber.execution.parallel.enabled=true</code>, plus a strategy (<code>dynamic</code> / <code>fixed</code>). Scenario-level by default.</td></tr>
+        <tr><td>TestNG</td><td><code>@DataProvider(parallel = true)</code> on the scenario provider in <code>AbstractTestNGCucumberTests</code>.</td></tr>
+        <tr><td>Maven, multiple JVMs</td><td>Surefire <code>forkCount</code> &mdash; coarser, but gives real process isolation.</td></tr>
+      </table></div>
+      <div class="trap"><b>What breaks when you switch it on</b><p>Static state in steps, a shared WebDriver or API client, shared test data, and <em>reports</em> &mdash; several plugins aren't thread-safe and produce interleaved or truncated output. Check the report first when parallel "works but looks wrong".</p></div>
+    </div></details>
+
+    <details class="q"><summary><span class="qn mono">05</span><span class="qt">Custom parameter types &mdash; cleaner than regex soup</span><span class="chev">&rsaquo;</span></summary>
+    <div class="ans">
+      <p>Built-in: <code>{int}</code>, <code>{float}</code>, <code>{word}</code>, <code>{string}</code>, <code>{}</code> (anonymous). You can register your own so steps read in domain language and arrive typed.</p>
+<pre><code class="java">public class ParameterTypes {
+
+    @ParameterType("PENDING|CONFIRMED|CANCELLED")
+    public BookingStatus status(String value) {
+        return BookingStatus.valueOf(value);
+    }
+
+    @ParameterType("\\d{4}-\\d{2}-\\d{2}")
+    public LocalDate isoDate(String value) {
+        return LocalDate.parse(value);
+    }
+
+    @DataTableType
+    public Guest guestEntry(Map&lt;String, String&gt; row) {
+        return new Guest(row.get("firstName"), row.get("lastName"), row.get("email"));
+    }
+}
+
+// steps then read cleanly and arrive strongly typed
+@Then("the booking status is {status}")
+public void theBookingStatusIs(BookingStatus expected) { }
+
+@Given("the booking runs from {isoDate} to {isoDate}")
+public void theBookingRuns(LocalDate from, LocalDate to) { }
+
+@Given("the following guests:")
+public void theFollowingGuests(List&lt;Guest&gt; guests) { }   // via @DataTableType</code></pre>
+      <div class="say"><b>Say this</b><p>"Conversion belongs in one place, not repeated in every step. It also means a typo in the feature file fails as an undefined step rather than as a parse error deep inside a step body."</p></div>
+    </div></details>
+
+    <details class="q"><summary><span class="qn mono">06</span><span class="qt">BDD anti-patterns &mdash; name these unprompted</span><span class="chev">&rsaquo;</span></summary>
+    <div class="ans">
+      <ul>
+        <li><strong>Imperative steps.</strong> Click-by-click Gherkin. The feature file becomes a brittle script nobody business-side reads.</li>
+        <li><strong>Gherkin as a test-case management tool.</strong> Scenarios written after the code, by QA alone, for QA alone. That's not BDD &mdash; it's a slower JUnit with extra layers.</li>
+        <li><strong>Shared mutable state</strong> between scenarios, so order matters and parallelism is impossible.</li>
+        <li><strong>Over-using Scenario Outline</strong> as a data-driven loop. Twelve rows of boundary values belong in a unit or API test, not in living documentation.</li>
+        <li><strong>Conjunction steps</strong> &mdash; <code>Given I log in and go to the cart and add an item</code>. Split them, or push the setup into a single higher-level step.</li>
+        <li><strong>Technical vocabulary in Gherkin</strong> &mdash; "the API returns 201". Say "the booking is created"; the status code belongs in the step definition.</li>
+        <li><strong>UI-only BDD.</strong> The same behaviours are usually cheaper and steadier driven at the API layer.</li>
+      </ul>
+    </div></details>
+
+    <details class="q"><summary><span class="qn mono">07</span><span class="qt">"When is Cucumber not worth it?" &mdash; have this answer ready</span><span class="chev">&rsaquo;</span></summary>
+    <div class="ans">
+      <p>This is the single best question to have a confident, non-defensive answer for, because most candidates either defend BDD reflexively or trash it.</p>
+      <div class="say"><b>Say this</b><p>"The value of Gherkin is a shared language with people who don't read code. If the BA and the product owner are genuinely reading and shaping those scenarios &mdash; three amigos, before the code &mdash; it earns its keep. If QA writes the features alone, after the fact, and nobody else opens them, then you've paid for an extra indirection layer, a glue-code maintenance burden and slower refactoring, and bought nothing. In that situation I'd argue for plain JUnit or TestNG with well-named tests."</p></div>
+      <p>The costs to be able to name: an extra layer between test and code, step-definition ambiguity as the suite grows, harder IDE navigation and refactoring, slower onboarding, and reporting that has to be rebuilt on top.</p>
+      <div class="trap"><b>Don't say</b><p>"BDD gives better reports." It does produce readable reports, but that's a side effect &mdash; leading with it tells the interviewer you're using a collaboration tool as a reporting tool, which is exactly the anti-pattern above.</p></div>
+    </div></details>
+
+    <details class="q"><summary><span class="qn mono">08</span><span class="qt">Structuring a Cucumber project so it scales</span><span class="chev">&rsaquo;</span></summary>
+    <div class="ans">
+<pre><code class="java">src/test/
+  java/
+    runners/     RunSmokeTest, RunRegressionTest
+    steps/       BookingSteps, AuthSteps        &lt;- thin: parse, delegate, assert
+    hooks/       Hooks                          &lt;- lifecycle only
+    context/     ScenarioContext                &lt;- DI-scoped state
+    api/         BookingApi, AuthApi            &lt;- the actual HTTP work
+    pages/       (if UI)                        &lt;- page objects
+    support/     builders, config, utils
+  resources/
+    features/    booking/cancellation.feature
+    schemas/     booking-schema.json
+    config/      qa.properties, uat.properties
+    junit-platform.properties</code></pre>
+      <p>The rule that keeps it maintainable: <strong>a step definition should be three lines</strong> &mdash; pull values out of the context, call a service or page object, assert. Any logic longer than that belongs in the layer below, where it's reusable and testable.</p>
+      <div class="trap"><b>Ambiguous step definitions</b><p>As a suite grows, two regexes eventually match the same step and Cucumber fails with <code>DuplicateStepDefinitionException</code> or an ambiguous-match error. Prevent it by scoping glue packages per runner and keeping step wording specific rather than generic (<code>I cancel the booking</code>, not <code>I click {string}</code>).</p></div>
+    </div></details>
+
+  </div>
+</section>
+
+<section class="pane" id="pane-cicd" role="tabpanel" hidden>
+  <p class="eyebrow">Assumed at senior level</p>
+  <h2 class="sec">CI/CD, Docker &amp; Grid</h2>
+  <p class="sec-note">"The DevOps team handles that" is a losing answer here. You're expected to own the test infrastructure &mdash; write the pipeline, containerise the runner, scale the browsers.</p>
+
+  <div class="qa">
+
+    <details class="q"><summary><span class="qn mono">01</span><span class="qt">Write a Jenkins declarative pipeline from memory</span><span class="chev">&rsaquo;</span></summary>
+    <div class="ans">
+<pre><code class="java">pipeline {
+    agent { label 'linux-docker' }
+
+    parameters {
+        choice(name: 'SUITE', choices: ['smoke', 'regression'], description: 'Which suite')
+        choice(name: 'ENV',   choices: ['qa', 'uat'],           description: 'Target env')
+        booleanParam(name: 'HEADLESS', defaultValue: true)
+    }
+
+    environment {
+        API_TOKEN = credentials('qa-api-token')     // never hard-code secrets
+        MAVEN_OPTS = '-Xmx1024m'
+    }
+
+    options {
+        timeout(time: 60, unit: 'MINUTES')
+        buildDiscarder(logRotator(numToKeepStr: '30'))
+        timestamps()
+        disableConcurrentBuilds()
+    }
+
+    triggers { cron('H 2 * * 1-5') }                // nightly regression
+
+    stages {
+        stage('Checkout') {
+            steps { checkout scm }
+        }
+
+        stage('Build') {
+            steps { sh 'mvn -B clean test-compile' }
+        }
+
+        stage('Start Grid') {
+            when { expression { params.SUITE == 'regression' } }
+            steps { sh 'docker compose -f docker-compose-grid.yml up -d --scale chrome=4' }
+        }
+
+        stage('Test') {
+            parallel {
+                stage('API')  { steps { sh "mvn -B test -Dgroups=api  -Denv=${params.ENV}" } }
+                stage('UI')   { steps { sh "mvn -B test -Dgroups=ui   -Denv=${params.ENV} -Dheadless=${params.HEADLESS}" } }
+            }
+        }
+    }
+
+    post {
+        always {
+            junit testResults: '**/target/surefire-reports/*.xml', allowEmptyResults: false
+            archiveArtifacts artifacts: 'target/screenshots/**', allowEmptyArchive: true
+            publishHTML target: [reportDir: 'target/site', reportFiles: 'index.html', reportName: 'Allure']
+            sh 'docker compose -f docker-compose-grid.yml down || true'
+        }
+        failure {
+            slackSend channel: '#qa-alerts',
+                      message: "Regression FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER} (${env.BUILD_URL})"
+        }
+        unstable {
+            slackSend channel: '#qa-alerts', message: "Flaky: ${env.BUILD_URL}"
+        }
+    }
+}</code></pre>
+      <div class="say"><b>Details that signal you've actually run this</b><p><code>credentials()</code> rather than a literal token; <code>allowEmptyResults: false</code> so a suite that silently ran zero tests fails the build instead of going green; teardown in <code>post { always }</code> so a crashed run doesn't leak containers; and <code>disableConcurrentBuilds()</code> so two runs don't fight over the same test data.</p></div>
+      <div class="trap"><b>Follow-up</b><p>"Declarative vs scripted?" Declarative is the structured DSL with validation, <code>post</code> blocks and better error messages &mdash; the default choice. Scripted is Groovy, more flexible, used when you need real logic. You can drop into scripted inside declarative with a <code>script { }</code> block.</p></div>
+    </div></details>
+
+    <details class="q"><summary><span class="qn mono">02</span><span class="qt">The same thing in GitHub Actions</span><span class="chev">&rsaquo;</span></summary>
+    <div class="ans">
+<pre><code class="java">name: Test Suite
+
+on:
+  pull_request:
+  schedule:
+    - cron: '0 2 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      suite:
+        type: choice
+        options: [smoke, regression]
+
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven                      # dependency cache, big time saver
+      - run: mvn -B test -DsuiteFile=testng-api-only.xml
+        env:
+          API_TOKEN: ${{ secrets.QA_API_TOKEN }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: api-results
+          path: target/surefire-reports/
+
+  ui:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false                      # one browser failing shouldn't cancel the rest
+      matrix:
+        browser: [chrome, firefox]
+        shard: [1, 2, 3]                    # 6 parallel jobs
+    services:
+      selenium:
+        image: selenium/standalone-${{ matrix.browser }}:latest
+        ports: ['4444:4444']
+        options: --shm-size=2g              # without this Chrome crashes in containers
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { java-version: '21', distribution: 'temurin', cache: maven }
+      - run: mvn -B test -Dbrowser=${{ matrix.browser }} -Dshard=${{ matrix.shard }} -Dshards=3</code></pre>
+      <div class="trap"><b>The one everyone hits</b><p><code>--shm-size=2g</code>. Docker gives a container 64MB of shared memory by default; Chrome needs far more and crashes with obscure "session deleted / tab crashed" errors. The alternative is <code>--disable-dev-shm-usage</code> in ChromeOptions. Knowing this is a strong practical signal.</p></div>
+    </div></details>
+
+    <details class="q"><summary><span class="qn mono">03</span><span class="qt">Dockerised Selenium Grid</span><span class="chev">&rsaquo;</span></summary>
+    <div class="ans">
+<pre><code class="java">services:
+  selenium-hub:
+    image: selenium/hub:4.25
+    ports: ["4442:4442", "4443:4443", "4444:4444"]
+
+  chrome:
+    image: selenium/node-chrome:4.25
+    shm_size: 2gb
+    depends_on: [selenium-hub]
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=4
+      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+
+  firefox:
+    image: selenium/node-firefox:4.25
+    shm_size: 2gb
+    depends_on: [selenium-hub]
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443</code></pre>
+      <p><code>docker compose up -d --scale chrome=5</code> gives five Chrome nodes. Point the suite at it:</p>
+<pre><code class="java">ChromeOptions options = new ChromeOptions();
+options.addArguments("--disable-dev-shm-usage", "--no-sandbox");
+
+WebDriver driver = new RemoteWebDriver(
+        new URL("http://localhost:4444/wd/hub"), options);</code></pre>
+      <p>Grid 4 modes worth naming: <strong>standalone</strong> (one process, dev/CI), <strong>hub &amp; node</strong> (the classic split), <strong>distributed</strong> (router, distributor, session map, session queue, event bus &mdash; for real scale). There's also a <strong>dynamic grid</strong> that starts a fresh container per session, which gives perfect isolation at the cost of startup time.</p>
+      <div class="say"><b>Say this</b><p>"A container per session is the cleanest answer to cross-test contamination &mdash; no cookie or profile state survives. The trade is a few seconds of container start per test, so I'd use it for the regression run and a warm standalone for PR smoke."</p></div>
+    </div></details>
+
+    <details class="q"><summary><span class="qn mono">04</span><span class="qt">Testcontainers &mdash; worth an hour, rarely mentioned by candidates</span><span class="chev">&rsaquo;</span></summary>
+    <div class="ans">
+      <p>Containers started and stopped <em>by the test itself</em>, with a random free port, and torn down automatically. It removes the "works on my machine / the shared QA database is polluted" class of problem entirely.</p>
+<pre><code class="java">@Testcontainers
+class OrderRepositoryTest {
+
+    @Container
+    static PostgreSQLContainer&lt;?&gt; postgres =
+            new PostgreSQLContainer&lt;&gt;("postgres:16")
+                .withDatabaseName("orders")
+                .withInitScript("schema.sql");
+
+    @Container
+    static GenericContainer&lt;?&gt; wiremock =
+            new GenericContainer&lt;&gt;("wiremock/wiremock:3.9.1")
+                .withExposedPorts(8080);
+
+    @BeforeAll
+    static void wire() {
+        System.setProperty("db.url", postgres.getJdbcUrl());
+        System.setProperty("payments.url",
+                "http://" + wiremock.getHost() + ":" + wiremock.getFirstMappedPort());
+    }
+}</code></pre>
+      <p>There's also <code>BrowserWebDriverContainer</code> for Selenium, with video recording of failures built in.</p>
+      <div class="say"><b>Say this</b><p>"Testcontainers is how I'd kill the shared-QA-database problem. Every run gets its own Postgres on a random port, seeded from a script, thrown away at the end. Tests become order-independent and parallel-safe for free, and there's no environment to 'reset' on a Monday morning."</p></div>
+    </div></details>
+
+    <details class="q"><summary><span class="qn mono">05</span><span class="qt">Designing the pipeline, not just writing it</span><span class="chev">&rsaquo;</span></summary>
+    <div class="ans">
+      <div class="tablewrap"><table>
+        <tr><th>Trigger</th><th>What runs</th><th>Budget</th><th>On failure</th></tr>
+        <tr><td>Every commit / PR</td><td>Unit + API smoke + a handful of critical UI journeys</td><td><b>Under 10 min</b></td><td>Block the merge</td></tr>
+        <tr><td>Merge to main</td><td>Full API suite + UI smoke</td><td>~20 min</td><td>Block the deploy</td></tr>
+        <tr><td>Nightly</td><td>Full regression, all browsers, all data sets</td><td>Whatever it takes</td><td>Alert, triage next morning</td></tr>
+        <tr><td>Pre-release</td><td>Regression + performance smoke + security scan</td><td>Scheduled</td><td>Go/no-go input</td></tr>
+      </table></div>
+      <p>The principles behind that table &mdash; this is the part being scored:</p>
+      <ul>
+        <li><strong>Feedback speed is the constraint.</strong> If PR feedback takes 40 minutes, people stop waiting for it and the gate is decorative.</li>
+        <li><strong>Fail fast on the cheap stuff.</strong> Compile, lint and unit before you start a browser.</li>
+        <li><strong>Shard to hit the budget</strong>, don't cut coverage. Split by class or by a <code>-Dshard</code> parameter across parallel agents.</li>
+        <li><strong>Quarantine, don't ignore.</strong> Flaky tests move to a non-blocking job with an owner and a ticket &mdash; the blocking suite stays trustworthy.</li>
+        <li><strong>Every run publishes results</strong> to the same place, so the trend is visible and not just the latest red.</li>
+      </ul>
+      <div class="trap"><b>Follow-up: "your regression takes 3 hours. Halve it."</b><p>In order: move setup from UI to API; parallelise and shard; drop UI tests duplicating API coverage; cache dependencies and Docker layers; run only impacted tests on PRs and the full set nightly. Note that "buy faster agents" is the last resort, not the first.</p></div>
+    </div></details>
+
+    <details class="q"><summary><span class="qn mono">06</span><span class="qt">Secrets, config and environments</span><span class="chev">&rsaquo;</span></summary>
+    <div class="ans">
+      <ul>
+        <li><strong>Never in the repo.</strong> The properties file holds the <em>key name</em>; the value comes from the environment.</li>
+        <li><strong>Jenkins</strong>: <code>credentials()</code> binding, masked in logs. <strong>Actions</strong>: <code>secrets.*</code>, also masked. Beyond that: Vault, AWS Secrets Manager, Azure Key Vault.</li>
+        <li><strong>One config per environment</strong>, selected at runtime: <code>-Denv=uat</code> picks <code>uat.properties</code>. No branching per environment.</li>
+        <li><strong>Precedence order</strong> worth stating: system property &rarr; environment variable &rarr; properties file &rarr; default. That's exactly what a <code>Config</code> class should implement.</li>
+      </ul>
+<pre><code class="java">public static String get(String key) {
+    String value = System.getProperty(key);                      // -Dkey=
+    if (value == null) value = System.getenv(toEnvVar(key));     // KEY_NAME
+    if (value == null) value = PROPS.getProperty(key);           // file
+    if (value == null) throw new IllegalStateException("No config for: " + key);
+    return value;
+}</code></pre>
+      <div class="trap"><b>If asked about a leak</b><p>Rotate the credential first, then purge it from history (<code>git filter-repo</code> or BFG), then add a pre-commit secret scanner. Rotating first matters &mdash; rewriting history on a pushed branch doesn't un-leak anything that's already been cloned.</p></div>
+    </div></details>
+
+    <details class="q"><summary><span class="qn mono">07</span><span class="qt">Docker fundamentals you'll be asked to state</span><span class="chev">&rsaquo;</span></summary>
+    <div class="ans">
+      <div class="tablewrap"><table>
+        <tr><th>Term</th><th>In one line</th></tr>
+        <tr><td>Image</td><td>An immutable, layered filesystem + metadata. The template.</td></tr>
+        <tr><td>Container</td><td>A running instance of an image, with a thin writable layer on top.</td></tr>
+        <tr><td>Dockerfile</td><td>The recipe that builds an image. Each instruction is a cached layer.</td></tr>
+        <tr><td>Volume</td><td>Storage that outlives the container &mdash; how test reports escape.</td></tr>
+        <tr><td>Bind mount</td><td>A host directory mapped in. Handy locally, avoid in CI.</td></tr>
+        <tr><td>Network</td><td>Containers on the same compose network reach each other <b>by service name</b>, not localhost.</td></tr>
+        <tr><td>compose</td><td>Declarative multi-container definition &mdash; hub + nodes + stubs in one file.</td></tr>
+      </table></div>
+<pre><code class="java">FROM maven:3.9-eclipse-temurin-21 AS build
+WORKDIR /app
+COPY pom.xml .
+RUN mvn -B dependency:go-offline          # cached layer: deps only change when pom does
+COPY src ./src
+RUN mvn -B test-compile
+
+FROM eclipse-temurin:21-jre
+WORKDIR /app
+COPY --from=build /app /app
+COPY --from=build /root/.m2 /root/.m2
+ENTRYPOINT ["mvn", "test"]</code></pre>
+      <div class="say"><b>The layer-caching point</b><p>"Copying <code>pom.xml</code> and resolving dependencies <em>before</em> copying source means a code change doesn't re-download the world. That one ordering decision takes the image build from minutes to seconds on every subsequent run."</p></div>
+      <div class="trap"><b>Networking gotcha</b><p>Inside compose, the suite reaches the hub at <code>http://selenium-hub:4444</code>, not <code>localhost</code>. And a containerised browser hitting your app under test uses the service name too &mdash; <code>localhost</code> inside a container means <em>that container</em>.</p></div>
+    </div></details>
+
+    <details class="q"><summary><span class="qn mono">08</span><span class="qt">Reporting and the metrics you'd actually watch</span><span class="chev">&rsaquo;</span></summary>
+    <div class="ans">
+      <p><strong>Allure</strong> is the usual choice &mdash; steps, attachments, history, retries and flakiness trends, fed by <code>allure-testng</code>/<code>allure-cucumber7-jvm</code> plus <code>AllureRestAssured</code> for request/response capture. ExtentReports is the lighter alternative. Either way, publish it from the pipeline so it has a stable URL.</p>
+      <p>The numbers worth putting on a dashboard:</p>
+      <ul>
+        <li><strong>Pass rate trend</strong> &mdash; the direction matters more than today's value</li>
+        <li><strong>Flaky rate</strong> &mdash; tests that passed on retry. The trust metric</li>
+        <li><strong>Duration trend</strong>, and the slowest 10 tests &mdash; that's where the runtime budget goes</li>
+        <li><strong>Escaped defects</strong> &mdash; found in production that the suite should have caught. The only metric that says whether any of it worked</li>
+        <li><strong>Time to fix a red build</strong></li>
+      </ul>
+      <div class="say"><b>Say this</b><p>"I report the flaky rate alongside the pass rate. A 98% pass rate where the missing 2% moves around every night is a worse suite than a 94% pass rate that fails on the same real defect &mdash; and only one of those numbers tells you that."</p></div>
+    </div></details>
+
+  </div>
+</section>
+
+<section class="pane" id="pane-design" role="tabpanel" hidden>
+  <p class="eyebrow">The round most people ramble through</p>
+  <h2 class="sec">Design round</h2>
+  <p class="sec-note">"How would you test X?" has no right answer, so it's scored on <em>structure</em>. Having one repeatable frame turns the hardest round into the most predictable one.</p>
+
+  <div class="block">
+    <h3 class="sub" style="margin-top:0">The frame: <span class="mono" style="color:var(--accent)">C-R-I-S-P</span></h3>
+    <p class="sec-note">Five moves, roughly ten minutes. Say the headings out loud as you go &mdash; interviewers are taking notes against a rubric, and signposting makes their job easy.</p>
+    <ol class="flow">
+      <li><strong>Clarify</strong> &mdash; spend the first 60&ndash;90 seconds asking, not answering. Who uses it? What scale? What's already built? What's the biggest risk to the business? <em>Never start designing immediately</em> &mdash; that alone fails the round for a lot of candidates.</li>
+      <li><strong>Risks</strong> &mdash; name what would actually hurt: money lost, data corrupted, users locked out, a regulator involved. Everything after this is justified by reference to those.</li>
+      <li><strong>Identify the layers</strong> &mdash; walk the pyramid explicitly: unit, component/contract, API/integration, UI journey, non-functional. Say what you'd test at each level <em>and what you deliberately would not</em>.</li>
+      <li><strong>Specifics</strong> &mdash; now get concrete. Actual test cases, actual edge cases, actual data. This is where you prove you've done it rather than read about it.</li>
+      <li><strong>Pipeline &amp; ownership</strong> &mdash; what runs when, who fixes a red build, what the exit criteria are, how you'd measure whether it's working.</li>
+    </ol>
+    <div class="say"><b>The single best habit</b><p>Ask "what's the riskiest part of this for the business?" early. It reframes the whole answer around impact instead of coverage, and it's the question a senior engineer asks that a mid-level one doesn't.</p></div>
+    <div class="trap"><b>Time management</b><p>Ten minutes goes fast. Roughly: 1.5 clarify, 1 risks, 2 layers, 4 specifics, 1.5 pipeline. If you're running out, cut <em>specifics</em>, never the pipeline &mdash; ending on "and here's how it runs and who owns it" lands much better than trailing off mid test-case-list.</p></div>
+  </div>
+
+  <hr class="rule">
+
+  <div class="block">
+    <p class="eyebrow">Practice these out loud, timed</p>
+    <h2 class="sec">Six prompts</h2>
+    <p class="sec-note">Reveal only after you've attempted each one. The notes aren't model answers &mdash; they're the things a strong answer touches that a weak one misses.</p>
+
+    <div class="drill">
+      <div class="drill-head"><span class="badge">Prompt 01</span><span class="badge lang">classic</span></div>
+      <h4>How would you test a URL shortener?</h4>
+      <p class="prompt">The most-asked design question in SDET interviews. Ten minutes.</p>
+      <details class="fix"><summary>What a strong answer covers</summary><div class="fixbody">
+        <p><strong>Clarify:</strong> public or internal? custom aliases allowed? expiry? analytics? expected scale &mdash; thousands or billions? Is the short code guessable-by-design or must it be unpredictable?</p>
+        <p><strong>Risks:</strong> collisions (two long URLs, one code), redirect to a malicious site, enumeration of other people's links, unavailability of the redirect path (the read path matters far more than the write path).</p>
+        <p><strong>Layers:</strong></p>
+        <ul>
+          <li><em>Unit</em> &mdash; the encoding function: is it deterministic, what's the alphabet, how long is the code, does it avoid ambiguous characters?</li>
+          <li><em>API</em> &mdash; create returns 201 + code; expand returns 301/302 + Location; idempotency of creating the same URL twice; invalid URL rejected; expired code returns 410 not 404.</li>
+          <li><em>Data</em> &mdash; collision behaviour under concurrent creates for the same URL.</li>
+          <li><em>UI</em> &mdash; one happy journey. That's all the UI is worth here.</li>
+          <li><em>Non-functional</em> &mdash; redirect latency under load, cache behaviour, what happens when the database is down (does the cache still serve?).</li>
+        </ul>
+        <p><strong>Specifics worth naming:</strong> very long URL, URL with query string and fragment, unicode/IDN domains, <code>javascript:</code> and <code>data:</code> schemes (should be rejected), already-shortened URL (redirect loop), case sensitivity of the code, trailing slash, concurrent creates racing for the same code.</p>
+        <p><strong>Pipeline:</strong> API suite on every PR since there's barely any UI; load test on the redirect path pre-release; a synthetic monitor hitting a known code in production, because a shortener that stops redirecting is an outage for everyone who ever shared a link.</p>
+        <div class="say"><b>The line that lands</b><p>"The write path is used once per link; the read path is used forever. I'd weight testing and monitoring heavily toward redirects."</p></div>
+      </div></details>
+    </div>
+
+    <div class="drill">
+      <div class="drill-head"><span class="badge">Prompt 02</span><span class="badge lang">money</span></div>
+      <h4>Design the test strategy for a payment checkout flow</h4>
+      <details class="fix"><summary>What a strong answer covers</summary><div class="fixbody">
+        <p><strong>Clarify:</strong> which payment methods? own PSP integration or hosted page? do we store card data (PCI scope)? refunds and partial refunds? multi-currency? 3-D Secure?</p>
+        <p><strong>Risks:</strong> double-charging, charging the wrong amount, order created without payment, payment taken without an order, refund failures, PCI exposure. Every one is money or a regulator.</p>
+        <p><strong>Layers:</strong> unit on amount/tax/rounding maths; <strong>contract tests against the PSP</strong>; <strong>stubbed PSP (WireMock) for the failure matrix</strong> &mdash; declined, insufficient funds, timeout, connection reset, duplicate webhook, out-of-order webhook; API tests for idempotency keys; a small number of end-to-end journeys against the PSP's sandbox; reconciliation checks between order state and payment state.</p>
+        <p><strong>Specifics:</strong> double-click submit; browser back after payment; session expiry mid-payment; webhook arriving before the redirect; webhook arriving twice; refund exceeding the original; currency rounding (0.005); 3-D Secure abandoned halfway.</p>
+        <div class="say"><b>The senior move</b><p>"Idempotency is the centre of this. I'd test that submitting the same payment twice with the same idempotency key charges once, and that a replayed webhook doesn't create a second order. Double-charging is the failure that ends up in the press."</p></div>
+        <p><strong>Pipeline:</strong> stubbed suite on every PR (fast, deterministic); sandbox end-to-end nightly; reconciliation job monitored in production.</p>
+      </div></details>
+    </div>
+
+    <div class="drill">
+      <div class="drill-head"><span class="badge">Prompt 03</span><span class="badge lang">microservices</span></div>
+      <h4>You have 30 microservices and end-to-end tests are too slow and too flaky. What do you do?</h4>
+      <details class="fix"><summary>What a strong answer covers</summary><div class="fixbody">
+        <p>This is really asking whether you understand the <strong>test pyramid in a distributed system</strong>, and whether you'll say the unpopular thing.</p>
+        <ul>
+          <li><strong>Diagnose first.</strong> What proportion of failures are real defects vs environment vs data vs timing? Without that number every proposal is a guess.</li>
+          <li><strong>Push down.</strong> Most end-to-end tests exist because nobody trusts the layers below. Replace them with contract tests (Pact) between each consumer/provider pair, so a breaking change fails the provider's build.</li>
+          <li><strong>Keep a thin end-to-end layer</strong> &mdash; a handful of critical business journeys, not a regression suite. Ten good ones beat four hundred.</li>
+          <li><strong>Isolate</strong> &mdash; each service tested against stubbed dependencies for its own behaviour, with Testcontainers for its own database.</li>
+          <li><strong>Fix the environment.</strong> Shared, long-lived, manually-seeded environments cause most of the flakiness. Ephemeral environments per pipeline run, seeded from code.</li>
+          <li><strong>Observability</strong> &mdash; correlation IDs through every test request so a failure points at a service instead of a screen.</li>
+          <li><strong>Shift right</strong> &mdash; synthetic monitoring and canary releases catch what pre-prod can't.</li>
+        </ul>
+        <div class="say"><b>Say this</b><p>"I'd expect to end up with fewer end-to-end tests, not more. The goal isn't a bigger suite &mdash; it's moving each check to the cheapest layer that can still catch the defect."</p></div>
+      </div></details>
+    </div>
+
+    <div class="drill">
+      <div class="drill-head"><span class="badge">Prompt 04</span><span class="badge lang">framework</span></div>
+      <h4>Design an automation framework from scratch for a new product</h4>
+      <details class="fix"><summary>What a strong answer covers</summary><div class="fixbody">
+        <p><strong>Clarify first:</strong> team size and skill; web only or mobile/API too; release cadence; existing CI; who reads the results; is there an existing suite to migrate?</p>
+        <p><strong>Then decisions, each with a reason:</strong></p>
+        <div class="tablewrap"><table>
+          <tr><th>Decision</th><th>Because</th></tr>
+          <tr><td>Language matches the dev stack</td><td>Devs contribute and review; you're not an island</td></tr>
+          <tr><td>API-first, UI for journeys only</td><td>Speed and stability; setup via API</td></tr>
+          <tr><td>Layered: tests / pages / services / core</td><td>A UI change touches one file</td></tr>
+          <tr><td>ThreadLocal driver + DI</td><td>Parallel from day one, not retrofitted</td></tr>
+          <tr><td>Config per environment, secrets from CI</td><td>One build runs anywhere</td></tr>
+          <tr><td>Data created per test, unique, cleaned up</td><td>Order-independent, parallel-safe</td></tr>
+          <tr><td>Allure + correlation IDs</td><td>Failures are diagnosable without a rerun</td></tr>
+          <tr><td>Smoke on PR, regression nightly</td><td>Feedback speed is the constraint</td></tr>
+        </table></div>
+        <p><strong>And what you'd deliberately not do:</strong> no BDD unless the business genuinely reads it; no record-and-playback; no custom reporting engine; no abstraction written before it has two callers.</p>
+        <div class="say"><b>The closing line</b><p>"I'd get one real test running end to end in CI on day two &mdash; even a trivial one. A framework that isn't wired into the pipeline from the start never quite gets there."</p></div>
+      </div></details>
+    </div>
+
+    <div class="drill">
+      <div class="drill-head"><span class="badge">Prompt 05</span><span class="badge lang">infra</span></div>
+      <h4>How would you test a file-upload feature?</h4>
+      <details class="fix"><summary>What a strong answer covers</summary><div class="fixbody">
+        <p>Deceptively deep &mdash; it's a security question wearing a functional costume.</p>
+        <ul>
+          <li><strong>Functional:</strong> supported types, size at and just over the limit, empty file, zero-byte vs whitespace-only, very long filename, unicode and emoji filenames, duplicate names, concurrent uploads of the same name.</li>
+          <li><strong>Security:</strong> an executable renamed to <code>.jpg</code> (is the check on extension or on magic bytes?); path traversal in the filename (<code>../../etc/passwd</code>); a zip bomb; an SVG containing script; oversized file bypassing client-side validation by posting straight to the API.</li>
+          <li><strong>Integrity:</strong> checksum the file on the way out and compare &mdash; upload then download and diff, don't just assert a 200.</li>
+          <li><strong>Resilience:</strong> connection dropped mid-upload; resume behaviour; storage backend unavailable; quota exceeded.</li>
+          <li><strong>Non-functional:</strong> upload time for a large file; many concurrent uploads; cleanup of orphaned temp files.</li>
+        </ul>
+        <div class="say"><b>The point that marks seniority</b><p>"Client-side validation isn't a control &mdash; I'd bypass the UI entirely and post the payload straight to the endpoint. If the server accepts a 2GB executable because the JavaScript was the only thing checking, that's the actual finding."</p></div>
+      </div></details>
+    </div>
+
+    <div class="drill">
+      <div class="drill-head"><span class="badge">Prompt 06</span><span class="badge lang">judgement</span></div>
+      <h4>You join a team with no automated tests and a two-week release cycle. First 60 days?</h4>
+      <details class="fix"><summary>What a strong answer covers</summary><div class="fixbody">
+        <p>Scored on sequencing and pragmatism, not ambition.</p>
+        <ul>
+          <li><strong>Days 1&ndash;10 &mdash; understand before building.</strong> Where do defects actually escape? What does release day look like? What's manually regression-tested every cycle, and how long does it take? That list is your backlog, ordered by pain.</li>
+          <li><strong>Days 10&ndash;20 &mdash; a thin vertical slice.</strong> One critical journey automated, running in CI, visible to the team. Proves the toolchain and buys credibility.</li>
+          <li><strong>Days 20&ndash;40 &mdash; go where the value is.</strong> API tests for the highest-risk services first; they're faster to write and steadier than UI. Automate the manual regression checklist in pain order.</li>
+          <li><strong>Days 40&ndash;60 &mdash; make it the team's, not yours.</strong> Automation in the definition of done, devs writing tests, a shared dashboard, and a flaky-test policy before flakiness appears.</li>
+        </ul>
+        <div class="trap"><b>The trap in this question</b><p>Announcing a big framework build in week one. The strong answer establishes the pain, ships something small that runs in CI, and only then scales &mdash; and says so explicitly.</p></div>
+      </div></details>
+    </div>
+
+  </div>
+
+  <div class="block">
+    <h3 class="sub">If you go blank</h3>
+    <div class="grid2">
+      <div class="card"><h4>Buy time honestly</h4><p>"Let me take thirty seconds to structure this." Then use CRISP. Silence while thinking is fine; rambling while thinking is not.</p></div>
+      <div class="card"><h4>Anchor on risk</h4><p>Any system: what costs money, what corrupts data, what locks users out. Three real risks will carry five minutes of good content.</p></div>
+      <div class="card"><h4>Walk the layers</h4><p>Unit, contract, API, UI, non-functional. Saying what you'd <em>skip</em> at each layer is as strong as saying what you'd test.</p></div>
+      <div class="card"><h4>End on ownership</h4><p>What runs when, who fixes red, how you'd know it's working. Always finish here &mdash; it's the senior half of the answer.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="pane" id="pane-coding" role="tabpanel" hidden>
+  <p class="eyebrow">You will actually write code</p>
+  <h2 class="sec">Coding</h2>
+  <p class="sec-note">Twenty problems, weighted toward what an SDET is asked rather than pure LeetCode: utilities you'd genuinely put in a framework, plus the classics they still open with. <b>Write each in an editor, timed at 20 minutes, before revealing.</b></p>
+
+  <div class="toolbar">
+    <button class="ghost" id="revealAll">Reveal all solutions</button>
+    <span class="cplx" style="margin-top:0">Say the complexity and the edge cases out loud &mdash; that half is scored too.</span>
+  </div>
+
+  <div class="grouphead"><h3>Framework utilities</h3><span>01&ndash;06 &middot; the SDET-flavoured ones</span></div>
+
+  <div class="drill">
+    <div class="drill-head"><span class="badge lang">01</span></div>
+    <h4>A generic retry helper with exponential backoff</h4>
+    <p class="prompt">"Write something that retries a flaky operation." Extremely common, and it tests generics plus functional interfaces.</p>
+    <details class="fix"><summary>Show solution</summary><div class="fixbody">
+<pre><code class="java">public final class Retry {
+
+    private Retry() { }
+
+    public static &lt;T&gt; T withBackoff(Supplier&lt;T&gt; action,
+                                    Predicate&lt;T&gt; isAcceptable,
+                                    int maxAttempts,
+                                    Duration initialDelay) {
+
+        if (maxAttempts &lt; 1) throw new IllegalArgumentException("maxAttempts must be &gt;= 1");
+
+        long delayMs = initialDelay.toMillis();
+        RuntimeException last = null;
+
+        for (int attempt = 1; attempt &lt;= maxAttempts; attempt++) {
+            try {
+                T result = action.get();
+                if (isAcceptable.test(result)) {
+                    return result;
+                }
+                last = new IllegalStateException("Unacceptable result: " + result);
+            } catch (RuntimeException e) {
+                last = e;
+            }
+
+            if (attempt &lt; maxAttempts) {
+                sleep(delayMs);
+                delayMs *= 2;                       // exponential
+            }
+        }
+        throw new IllegalStateException(
+                "Failed after " + maxAttempts + " attempts", last);
+    }
+
+    private static void sleep(long ms) {
+        try {
+            Thread.sleep(ms);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();      // restore the flag - do not swallow
+            throw new IllegalStateException("Interrupted while retrying", e);
+        }
+    }
+}
+
+// usage
+Response r = Retry.withBackoff(
+        () -&gt; given().spec(spec).get("/jobs/" + id),
+        resp -&gt; resp.statusCode() == 200,
+        5, Duration.ofMillis(200));</code></pre>
+      <p class="note"><b>The three things being marked:</b> generics done properly (<code>&lt;T&gt;</code>, <code>Supplier</code>, <code>Predicate</code>); <strong>restoring the interrupt flag</strong> rather than swallowing <code>InterruptedException</code> &mdash; almost nobody does this and it's a real bug; and chaining the last failure as the cause so the stack trace is diagnosable.</p>
+      <p class="note"><b>Follow-up:</b> "Add jitter." Multiply the delay by a random factor between 0.5 and 1.5 so parallel clients don't retry in lockstep and stampede the service.</p>
+    </div></details>
+  </div>
+
+  <div class="drill">
+    <div class="drill-head"><span class="badge lang">02</span></div>
+    <h4>Poll until a condition is true, with a timeout</h4>
+    <p class="prompt">Essentially "write Awaitility". Tests whether you reach for <code>Thread.sleep</code>.</p>
+    <details class="fix"><summary>Show solution</summary><div class="fixbody">
+<pre><code class="java">public static &lt;T&gt; T until(Supplier&lt;T&gt; probe,
+                          Predicate&lt;T&gt; condition,
+                          Duration timeout,
+                          Duration interval) {
+
+    long deadline = System.nanoTime() + timeout.toNanos();
+    T last = null;
+
+    while (System.nanoTime() &lt; deadline) {
+        last = probe.get();
+        if (condition.test(last)) {
+            return last;
+        }
+        sleep(interval.toMillis());
+    }
+    throw new AssertionError(
+            "Condition not met within " + timeout + ". Last value: " + last);
+}</code></pre>
+      <p class="note"><b>Details that matter:</b> use <code>System.nanoTime()</code>, not <code>currentTimeMillis()</code> &mdash; the latter jumps if the clock is adjusted. Keep the <strong>last observed value</strong> and put it in the failure message; "condition not met" alone is useless in a CI log.</p>
+      <p class="note"><b>Follow-up:</b> "Why not <code>while(true)</code> with a counter?" A count of attempts isn't a time bound &mdash; if each probe takes 3 seconds, ten attempts is 30 seconds, not the 5 you intended.</p>
+    </div></details>
+  </div>
+
+  <div class="drill">
+    <div class="drill-head"><span class="badge lang">03</span></div>
+    <h4>Flatten a nested map into dot-notation keys</h4>
+    <p class="prompt"><code>{a={b={c=1}}}</code> &rarr; <code>{a.b.c=1}</code>. Recursion plus generics; very common for JSON comparison utilities.</p>
+    <details class="fix"><summary>Show solution</summary><div class="fixbody">
+<pre><code class="java">public static Map&lt;String, Object&gt; flatten(Map&lt;String, Object&gt; source) {
+    Map&lt;String, Object&gt; out = new LinkedHashMap&lt;&gt;();
+    flattenInto(source, "", out);
+    return out;
+}
+
+@SuppressWarnings("unchecked")
+private static void flattenInto(Map&lt;String, Object&gt; source,
+                                String prefix,
+                                Map&lt;String, Object&gt; out) {
+
+    for (Map.Entry&lt;String, Object&gt; e : source.entrySet()) {
+        String key = prefix.isEmpty() ? e.getKey() : prefix + "." + e.getKey();
+        Object value = e.getValue();
+
+        if (value instanceof Map) {
+            flattenInto((Map&lt;String, Object&gt;) value, key, out);
+
+        } else if (value instanceof List) {
+            List&lt;Object&gt; list = (List&lt;Object&gt;) value;
+            for (int i = 0; i &lt; list.size(); i++) {
+                Object item = list.get(i);
+                String indexed = key + "[" + i + "]";
+                if (item instanceof Map) {
+                    flattenInto((Map&lt;String, Object&gt;) item, indexed, out);
+                } else {
+                    out.put(indexed, item);
+                }
+            }
+        } else {
+            out.put(key, value);        // includes null - deliberately kept
+        }
+    }
+}</code></pre>
+      <p class="note"><b>Edge cases to volunteer:</b> empty nested map (produces no entry &mdash; is that right?), null values, arrays of arrays, and a key that already contains a dot.</p>
+    </div></details>
+  </div>
+
+  <div class="drill">
+    <div class="drill-head"><span class="badge lang">04</span></div>
+    <h4>Diff two maps and report what changed</h4>
+    <p class="prompt">The natural follow-on from 03 &mdash; and the core of any "compare expected vs actual payload" utility.</p>
+    <details class="fix"><summary>Show solution</summary><div class="fixbody">
+<pre><code class="java">public static List&lt;String&gt; diff(Map&lt;String, Object&gt; expected,
+                                Map&lt;String, Object&gt; actual) {
+
+    List&lt;String&gt; differences = new ArrayList&lt;&gt;();
+
+    Set&lt;String&gt; allKeys = new LinkedHashSet&lt;&gt;(expected.keySet());
+    allKeys.addAll(actual.keySet());
+
+    for (String key : allKeys) {
+        boolean inExpected = expected.containsKey(key);
+        boolean inActual   = actual.containsKey(key);
+
+        if (!inActual) {
+            differences.add("MISSING  " + key + " (expected " + expected.get(key) + ")");
+        } else if (!inExpected) {
+            differences.add("EXTRA    " + key + " = " + actual.get(key));
+        } else if (!Objects.equals(expected.get(key), actual.get(key))) {
+            differences.add("CHANGED  " + key
+                    + ": expected " + expected.get(key)
+                    + " but was "   + actual.get(key));
+        }
+    }
+    return differences;
+}</code></pre>
+      <p class="note"><b>Why <code>Objects.equals</code>:</b> it null-safes both sides. <code>expected.get(k).equals(...)</code> throws the moment a legitimate null appears.</p>
+      <p class="note"><b>Follow-up:</b> "How would you ignore volatile fields like <code>createdAt</code> or generated ids?" Take a <code>Set&lt;String&gt; ignoredKeys</code> (or a list of regex patterns) and skip them. That's exactly what real payload-comparison utilities need, and saying it unprompted shows you've built one.</p>
+    </div></details>
+  </div>
+
+  <div class="drill">
+    <div class="drill-head"><span class="badge lang">05</span></div>
+    <h4>Read a CSV into a list of maps</h4>
+    <p class="prompt">Test-data plumbing. Simple &mdash; the marks are in the edge cases.</p>
+    <details class="fix"><summary>Show solution</summary><div class="fixbody">
+<pre><code class="java">public static List&lt;Map&lt;String, String&gt;&gt; readCsv(Path file) throws IOException {
+
+    try (BufferedReader reader = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
+
+        String headerLine = reader.readLine();
+        if (headerLine == null) {
+            return List.of();                        // empty file, not an exception
+        }
+        String[] headers = headerLine.split(",", -1);
+
+        List&lt;Map&lt;String, String&gt;&gt; rows = new ArrayList&lt;&gt;();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            if (line.isBlank()) continue;
+
+            String[] cells = line.split(",", -1);    // -1 keeps trailing empties
+            Map&lt;String, String&gt; row = new LinkedHashMap&lt;&gt;();
+            for (int i = 0; i &lt; headers.length; i++) {
+                row.put(headers[i].trim(), i &lt; cells.length ? cells[i].trim() : "");
+            }
+            rows.add(row);
+        }
+        return rows;
+    }
+}</code></pre>
+      <p class="note"><b>The detail interviewers probe:</b> <code>split(",", -1)</code>. Without the limit, Java drops trailing empty strings, so <code>a,b,,</code> silently becomes two columns and your row map is short.</p>
+      <p class="note"><b>Say this:</b> "For anything real I'd use OpenCSV or Commons CSV &mdash; quoted fields containing commas, escaped quotes and embedded newlines are where a hand-rolled parser falls over. This version is fine for controlled test data."</p>
+    </div></details>
+  </div>
+
+  <div class="drill">
+    <div class="drill-head"><span class="badge lang">06</span></div>
+    <h4>An LRU cache</h4>
+    <p class="prompt">A dev-crossover classic. There's a two-line Java answer and a from-scratch answer &mdash; know both.</p>
+    <details class="fix"><summary>Show solution</summary><div class="fixbody">
+<pre><code class="java">// The Java answer: LinkedHashMap in access-order mode
+public class LruCache&lt;K, V&gt; extends LinkedHashMap&lt;K, V&gt; {
+
+    private final int capacity;
+
+    public LruCache(int capacity) {
+        super(16, 0.75f, true);        // true = ACCESS order, not insertion order
+        this.capacity = capacity;
+    }
+
+    @Override
+    protected boolean removeEldestEntry(Map.Entry&lt;K, V&gt; eldest) {
+        return size() &gt; capacity;
+    }
+}</code></pre>
+      <p class="note">The from-scratch answer, if they ask: a <code>HashMap</code> from key to node, plus a doubly-linked list. Get moves the node to the head; put inserts at the head and evicts the tail when over capacity. Both operations O(1) &mdash; and O(1) is the whole point of the question.</p>
+      <p class="note"><b>Follow-up:</b> "Make it thread-safe." Wrap with <code>Collections.synchronizedMap</code>, or use Caffeine/Guava &mdash; and say why you'd take the library: correct eviction, TTL, and stats, none of which you want to hand-write.</p>
+    </div></details>
+  </div>
+
+  <div class="grouphead"><h3>Streams &amp; collections</h3><span>07&ndash;13 &middot; expect these to be Java 8-only</span></div>
+
+  <div class="drill">
+    <div class="drill-head"><span class="badge lang">07</span></div>
+    <h4>Group, aggregate and rank a list of orders</h4>
+    <details class="fix"><summary>Show solution</summary><div class="fixbody">
+<pre><code class="java">// total spend per customer
+Map&lt;String, Double&gt; spendByCustomer = orders.stream()
+        .collect(Collectors.groupingBy(Order::getCustomerId,
+                 Collectors.summingDouble(Order::getTotal)));
+
+// order count per status
+Map&lt;Status, Long&gt; byStatus = orders.stream()
+        .collect(Collectors.groupingBy(Order::getStatus, Collectors.counting()));
+
+// highest-value order per customer
+Map&lt;String, Optional&lt;Order&gt;&gt; biggest = orders.stream()
+        .collect(Collectors.groupingBy(Order::getCustomerId,
+                 Collectors.maxBy(Comparator.comparingDouble(Order::getTotal))));
+
+// top 3 customers by spend, as an ordered map
+LinkedHashMap&lt;String, Double&gt; top3 = spendByCustomer.entrySet().stream()
+        .sorted(Map.Entry.&lt;String, Double&gt;comparingByValue().reversed())
+        .limit(3)
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+                                  (a, b) -&gt; a, LinkedHashMap::new));
+
+// split on a condition
+Map&lt;Boolean, List&lt;Order&gt;&gt; highValue = orders.stream()
+        .collect(Collectors.partitioningBy(o -&gt; o.getTotal() &gt; 1000));
+
+// flatten nested collections
+List&lt;String&gt; allSkus = orders.stream()
+        .flatMap(o -&gt; o.getItems().stream())
+        .map(Item::getSku)
+        .distinct()
+        .collect(Collectors.toList());</code></pre>
+      <p class="note"><b>The trap in the top-3:</b> <code>LinkedHashMap::new</code>. <code>Collectors.toMap</code> returns a <code>HashMap</code> by default, which discards the sort you just did. It looks like working code and isn't.</p>
+    </div></details>
+  </div>
+
+  <div class="drill">
+    <div class="drill-head"><span class="badge lang">08</span></div>
+    <h4>Character frequency, and first non-repeating character</h4>
+    <details class="fix"><summary>Show solution</summary><div class="fixbody">
+<pre><code class="java">Map&lt;Character, Long&gt; freq = input.chars()
+        .mapToObj(c -&gt; (char) c)
+        .collect(Collectors.groupingBy(c -&gt; c, LinkedHashMap::new, Collectors.counting()));
+
+Character firstUnique = freq.entrySet().stream()
+        .filter(e -&gt; e.getValue() == 1)
+        .map(Map.Entry::getKey)
+        .findFirst()
+        .orElse(null);</code></pre>
+      <p class="note"><code>LinkedHashMap::new</code> is load-bearing again &mdash; with a plain <code>HashMap</code>, "first" is meaningless because the iteration order isn't insertion order.</p>
+    </div></details>
+  </div>
+
+  <div class="drill">
+    <div class="drill-head"><span class="badge lang">09</span></div>
+    <h4>Second-largest element, handling duplicates</h4>
+    <details class="fix"><summary>Show solution</summary><div class="fixbody">
+<pre><code class="java">// one pass, O(n) time, O(1) space
+int largest = Integer.MIN_VALUE, second = Integer.MIN_VALUE;
+for (int n : numbers) {
+    if (n &gt; largest)                         { second = largest; largest = n; }
+    else if (n &gt; second &amp;&amp; n != largest)     { second = n; }
+}
+
+// stream version
+int second = Arrays.stream(numbers).distinct().boxed()
+        .sorted(Comparator.reverseOrder())
+        .skip(1).findFirst()
+        .orElseThrow(() -&gt; new IllegalArgumentException("No distinct second largest"));</code></pre>
+      <p class="note"><b>Volunteer the edge case before they ask:</b> <code>{5,5,5}</code>. Without the <code>n != largest</code> guard (or <code>distinct()</code>) it returns 5, which is wrong. That guard <em>is</em> the question.</p>
+    </div></details>
+  </div>
+
+  <div class="drill">
+    <div class="drill-head"><span class="badge lang">10</span></div>
+    <h4>Remove duplicates from a list of custom objects, preserving order</h4>
+    <details class="fix"><summary>Show solution</summary><div class="fixbody">
+<pre><code class="java">// if equals/hashCode are correct
+List&lt;User&gt; unique = new ArrayList&lt;&gt;(new LinkedHashSet&lt;&gt;(users));
+
+// dedupe by one field, without touching equals/hashCode
+List&lt;User&gt; byEmail = users.stream()
+        .collect(Collectors.collectingAndThen(
+                Collectors.toMap(User::getEmail, u -&gt; u, (a, b) -&gt; a, LinkedHashMap::new),
+                m -&gt; new ArrayList&lt;&gt;(m.values())));</code></pre>
+      <p class="note"><b>The answer they're fishing for:</b> both <code>distinct()</code> and <code>LinkedHashSet</code> rely on <code>equals()</code> and <code>hashCode()</code>. Without them, every object is unique and nothing gets removed &mdash; silently. The merge function <code>(a, b) -&gt; a</code> also decides whether you keep the first or last duplicate, which is a real business decision.</p>
+    </div></details>
+  </div>
+
+  <div class="drill">
+    <div class="drill-head"><span class="badge lang">11</span></div>
+    <h4>Merge overlapping intervals</h4>
+    <p class="prompt">A genuine algorithm question that shows up in SDET loops &mdash; and maps neatly onto booking/scheduling domains.</p>
+    <details class="fix"><summary>Show solution</summary><div class="fixbody">
+<pre><code class="java">public static List&lt;int[]&gt; merge(List&lt;int[]&gt; intervals) {
+    if (intervals.isEmpty()) return List.of();
+
+    List&lt;int[]&gt; sorted = new ArrayList&lt;&gt;(intervals);
+    sorted.sort(Comparator.comparingInt(a -&gt; a[0]));      // sort by start
+
+    List&lt;int[]&gt; merged = new ArrayList&lt;&gt;();
+    int[] current = sorted.get(0);
+    merged.add(current);
+
+    for (int[] next : sorted) {
+        if (next[0] &lt;= current[1]) {                       // overlap
+            current[1] = Math.max(current[1], next[1]);    // extend
+        } else {
+            current = next;
+            merged.add(current);
+        }
+    }
+    return merged;
+}</code></pre>
+      <span class="cplx">O(n log n) from the sort &middot; O(n) extra space</span>
+      <p class="note"><b>Edge cases:</b> touching but not overlapping (<code>[1,3]</code> and <code>[3,5]</code> &mdash; do they merge? ask), a single interval, one interval fully containing another, and whether the input may be mutated (this version mutates; say so).</p>
+    </div></details>
+  </div>
+
+  <div class="drill">
+    <div class="drill-head"><span class="badge lang">12</span></div>
+    <h4>Find a pair summing to a target</h4>
+    <details class="fix"><summary>Show solution</summary><div class="fixbody">
+<pre><code class="java">// O(n) with a set - the expected answer
+public static int[] twoSum(int[] nums, int target) {
+    Map&lt;Integer, Integer&gt; seen = new HashMap&lt;&gt;();     // value -> index
+    for (int i = 0; i &lt; nums.length; i++) {
+        Integer j = seen.get(target - nums[i]);
+        if (j != null) return new int[]{ j, i };
+        seen.put(nums[i], i);
+    }
+    return new int[0];
+}</code></pre>
+      <p class="note">If they say the array is <em>sorted</em>, switch to two pointers &mdash; O(n) time, O(1) space. Offering that upgrade unprompted is the differentiator.</p>
+    </div></details>
+  </div>
+
+  <div class="drill">
+    <div class="drill-head"><span class="badge lang">13</span></div>
+    <h4>Parse a log file and report the top N errors</h4>
+    <p class="prompt">Streams over files &mdash; and closer to real SDET work than most algorithm questions.</p>
+    <details class="fix"><summary>Show solution</summary><div class="fixbody">
+<pre><code class="java">public static Map&lt;String, Long&gt; topErrors(Path log, int n) throws IOException {
+
+    Pattern pattern = Pattern.compile("ERROR\\s+\\[.*?\\]\\s+(.*?)(?:\\s+at\\s|$)");
+
+    try (Stream&lt;String&gt; lines = Files.lines(log, StandardCharsets.UTF_8)) {
+
+        return lines
+                .map(pattern::matcher)
+                .filter(Matcher::find)
+                .map(m -&gt; m.group(1).trim())
+                .collect(Collectors.groupingBy(msg -&gt; msg, Collectors.counting()))
+                .entrySet().stream()
+                .sorted(Map.Entry.&lt;String, Long&gt;comparingByValue().reversed())
+                .limit(n)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+                                          (a, b) -&gt; a, LinkedHashMap::new));
+    }
+}</code></pre>
+      <p class="note"><b>Why <code>Files.lines</code> in try-with-resources:</b> it's lazy, so a 5GB log never loads into memory &mdash; but it holds a file handle, so it must be closed. Forgetting the try-with-resources leaks descriptors, and that's exactly what the question is checking.</p>
+    </div></details>
+  </div>
+
+  <div class="grouphead"><h3>Concurrency &amp; the classics</h3><span>14&ndash;20 &middot; warmups and thread questions</span></div>
+
+  <div class="drill">
+    <div class="drill-head"><span class="badge lang">14</span></div>
+    <h4>Run N tasks in parallel and collect the results</h4>
+    <details class="fix"><summary>Show solution</summary><div class="fixbody">
+<pre><code class="java">ExecutorService pool = Executors.newFixedThreadPool(8);
+try {
+    List&lt;Callable&lt;Response&gt;&gt; tasks = ids.stream()
+            .map(id -&gt; (Callable&lt;Response&gt;) () -&gt; api.fetch(id))
+            .collect(Collectors.toList());
+
+    List&lt;Future&lt;Response&gt;&gt; futures = pool.invokeAll(tasks);   // blocks until all finish
+
+    List&lt;Response&gt; results = new ArrayList&lt;&gt;();
+    for (Future&lt;Response&gt; f : futures) {
+        results.add(f.get());          // rethrows task failures as ExecutionException
+    }
+    return results;
+
+} finally {
+    pool.shutdown();                   // always - otherwise the JVM will not exit
+}</code></pre>
+      <p class="note"><b>The two marks:</b> <code>shutdown()</code> in a <code>finally</code> (a non-daemon pool keeps the JVM alive forever), and knowing that <code>Future.get()</code> is where a task's exception surfaces &mdash; wrapped in <code>ExecutionException</code>, so you unwrap with <code>getCause()</code>.</p>
+      <p class="note"><b>Modern variant:</b> <code>CompletableFuture.allOf(...)</code> when you want composition rather than blocking.</p>
+    </div></details>
+  </div>
+
+  <div class="drill">
+    <div class="drill-head"><span class="badge lang">15</span></div>
+    <h4>A thread-safe counter, three ways</h4>
+    <details class="fix"><summary>Show solution</summary><div class="fixbody">
+<pre><code class="java">// 1 - synchronized: correct, coarse
+private int count;
+public synchronized void increment() { count++; }
+
+// 2 - atomic: lock-free CAS, preferred for a single value
+private final AtomicInteger count = new AtomicInteger();
+count.incrementAndGet();
+
+// 3 - counting keys concurrently
+ConcurrentHashMap&lt;String, LongAdder&gt; counters = new ConcurrentHashMap&lt;&gt;();
+counters.computeIfAbsent(key, k -&gt; new LongAdder()).increment();</code></pre>
+      <p class="note"><b>Why <code>count++</code> isn't atomic:</b> it's three operations &mdash; read, add, write. Two threads can read the same value and one increment is lost. That sentence is the whole answer to "what's a race condition?"</p>
+      <p class="note"><b>Follow-up:</b> "Atomic vs LongAdder?" <code>AtomicInteger</code> is a single CAS-updated value &mdash; fine until contention is high, when threads spin retrying. <code>LongAdder</code> spreads across cells and sums on read: faster to write, slightly slower to read.</p>
+    </div></details>
+  </div>
+
+  <div class="drill">
+    <div class="drill-head"><span class="badge lang">16</span></div>
+    <h4>Reverse a string, and reverse the words in a sentence</h4>
+    <details class="fix"><summary>Show solution</summary><div class="fixbody">
+<pre><code class="java">// characters, without StringBuilder.reverse()
+char[] chars = input.toCharArray();
+int left = 0, right = chars.length - 1;
+while (left &lt; right) {
+    char tmp = chars[left];
+    chars[left++] = chars[right];
+    chars[right--] = tmp;
+}
+return new String(chars);
+
+// word order
+String[] words = sentence.trim().split("\\s+");
+Collections.reverse(Arrays.asList(words));
+return String.join(" ", words);
+
+// each word reversed, order kept
+return Arrays.stream(sentence.trim().split("\\s+"))
+        .map(w -&gt; new StringBuilder(w).reverse().toString())
+        .collect(Collectors.joining(" "));</code></pre>
+      <p class="note"><code>split("\\s+")</code>, not <code>split(" ")</code> &mdash; the regex collapses runs of whitespace so double spaces don't produce empty words.</p>
+    </div></details>
+  </div>
+
+  <div class="drill">
+    <div class="drill-head"><span class="badge lang">17</span></div>
+    <h4>Palindrome and anagram checks</h4>
+    <details class="fix"><summary>Show solution</summary><div class="fixbody">
+<pre><code class="java">public static boolean isPalindrome(String s) {
+    String clean = s.replaceAll("[^A-Za-z0-9]", "").toLowerCase();
+    int l = 0, r = clean.length() - 1;
+    while (l &lt; r) {
+        if (clean.charAt(l++) != clean.charAt(r--)) return false;
+    }
+    return true;
+}
+
+public static boolean isAnagram(String a, String b) {
+    char[] x = a.replaceAll("\\s", "").toLowerCase().toCharArray();
+    char[] y = b.replaceAll("\\s", "").toLowerCase().toCharArray();
+    if (x.length != y.length) return false;      // cheap exit first
+    Arrays.sort(x);
+    Arrays.sort(y);
+    return Arrays.equals(x, y);
+}</code></pre>
+      <p class="note">The mark on palindrome is the <strong>cleanup</strong> &mdash; handling "A man, a plan, a canal: Panama" without being asked. On anagram, offering the O(n) counting version as an alternative to the O(n log n) sort.</p>
+    </div></details>
+  </div>
+
+  <div class="drill">
+    <div class="drill-head"><span class="badge lang">18</span></div>
+    <h4>Find duplicates, and the missing number in 1..n</h4>
+    <details class="fix"><summary>Show solution</summary><div class="fixbody">
+<pre><code class="java">// duplicates - Set.add() returns false when already present
+Set&lt;Integer&gt; seen = new HashSet&lt;&gt;(), dupes = new LinkedHashSet&lt;&gt;();
+for (int n : numbers) {
+    if (!seen.add(n)) dupes.add(n);
+}
+
+// missing number, O(n) time O(1) space
+long expected = (long) n * (n + 1) / 2;
+long actual = Arrays.stream(numbers).asLongStream().sum();
+return (int) (expected - actual);</code></pre>
+      <p class="note"><b>Volunteer the overflow point:</b> using <code>long</code> for the sums. With <code>int</code>, a large n overflows and the answer is silently wrong. The XOR variant avoids overflow entirely.</p>
+    </div></details>
+  </div>
+
+  <div class="drill">
+    <div class="drill-head"><span class="badge lang">19</span></div>
+    <h4>Sort a map by value, descending</h4>
+    <details class="fix"><summary>Show solution</summary><div class="fixbody">
+<pre><code class="java">LinkedHashMap&lt;String, Integer&gt; sorted = scores.entrySet().stream()
+        .sorted(Map.Entry.&lt;String, Integer&gt;comparingByValue().reversed())
+        .collect(Collectors.toMap(
+                Map.Entry::getKey,
+                Map.Entry::getValue,
+                (a, b) -&gt; a,
+                LinkedHashMap::new));      // &lt;- without this the sort is thrown away</code></pre>
+      <p class="note">This is the single most common "looks right, is wrong" answer in Java interviews. Point at the fourth argument and explain it unprompted.</p>
+    </div></details>
+  </div>
+
+  <div class="drill">
+    <div class="drill-head"><span class="badge lang">20</span></div>
+    <h4>Write a custom ExpectedCondition</h4>
+    <p class="prompt">Ties Java 8 to Selenium, and shows you understand why the API works.</p>
+    <details class="fix"><summary>Show solution</summary><div class="fixbody">
+<pre><code class="java">// as a lambda - possible because ExpectedCondition is a functional interface
+wait.until(driver -&gt; driver.findElements(By.cssSelector(".row")).size() &gt; 10);
+
+// as a reusable, well-named condition
+public static ExpectedCondition&lt;Boolean&gt; tableHasAtLeast(By locator, int minRows) {
+    return new ExpectedCondition&lt;Boolean&gt;() {
+
+        @Override
+        public Boolean apply(WebDriver driver) {
+            return driver.findElements(locator).size() &gt;= minRows;
+        }
+
+        @Override
+        public String toString() {
+            return "table " + locator + " to have at least " + minRows + " rows";
+        }
+    };
+}</code></pre>
+      <p class="note"><b>The <code>toString()</code> is the point.</b> It's what appears in the TimeoutException message. Without it you get "expected condition failed"; with it you get "waiting for table By.cssSelector(.row) to have at least 10 rows" &mdash; diagnosable from a CI log alone.</p>
+    </div></details>
+  </div>
+
+</section>
+
+<section class="pane" id="pane-core" role="tabpanel" hidden>
+  <p class="eyebrow">Keep-sharp track</p>
+  <h2 class="sec">Java &amp; Selenium</h2>
+  <p class="sec-note">You didn't weight these, and that's the right call &mdash; but they'll still come up, so this is the condensed version. One session in week 3, not more.</p>
+
+  <div class="qa">
+
+    <details class="q"><summary><span class="qn mono">01</span><span class="qt">equals / hashCode, and what breaks</span><span class="chev">&rsaquo;</span></summary>
+    <div class="ans">
+      <p><strong>Equal objects must have equal hashCodes.</strong> The reverse isn't required. Override <code>equals()</code> and forget <code>hashCode()</code> and your object goes into one bucket but is looked up in another &mdash; <code>HashSet.contains()</code> returns false for an object that <em>is</em> equal, <strong>silently</strong>.</p>
+      <p>Directly relevant to test code: any deduplication, any <code>distinct()</code>, any assertion comparing collections of POJOs depends on it.</p>
+    </div></details>
+
+    <details class="q"><summary><span class="qn mono">02</span><span class="qt">HashMap internals &mdash; the four numbers</span><span class="chev">&rsaquo;</span></summary>
+    <div class="ans">
+      <p>Default capacity <strong>16</strong>, load factor <strong>0.75</strong> so it resizes at <strong>12</strong> entries. A bucket chain converts to a red-black tree at <strong>8</strong> (once the table is at least 64 buckets) and reverts at <strong>6</strong>. Collisions land in the same bucket and are separated by <code>equals()</code>.</p>
+      <p><code>ConcurrentHashMap</code> is the parallel-safe version: per-bin locking, no nulls, reads never block.</p>
+    </div></details>
+
+    <details class="q"><summary><span class="qn mono">03</span><span class="qt">Common Java traps</span><span class="chev">&rsaquo;</span></summary>
+    <div class="ans">
+      <div class="tablewrap"><table>
+        <tr><th>Code</th><th>What happens</th></tr>
+        <tr><td class="mono">Integer a=127,b=127; a==b</td><td><code>true</code> &mdash; boxed values &minus;128..127 are cached. 128 gives <code>false</code>. Never <code>==</code> on wrappers</td></tr>
+        <tr><td class="mono">int n = map.get(missing)</td><td>NPE from auto-unboxing null. Use <code>getOrDefault</code></td></tr>
+        <tr><td class="mono">7 / 9 * 100</td><td><code>0</code> &mdash; integer division truncates first. Cast one operand</td></tr>
+        <tr><td class="mono">list.remove(x) in for-each</td><td>ConcurrentModificationException. Use <code>removeIf</code> or <code>iterator.remove()</code></td></tr>
+        <tr><td class="mono">Collectors.toMap with dupes</td><td>IllegalStateException. Supply a merge function</td></tr>
+        <tr><td class="mono">static SimpleDateFormat</td><td>Not thread-safe &mdash; garbled output under parallel. Use <code>DateTimeFormatter</code></td></tr>
+        <tr><td class="mono">stream used twice</td><td>IllegalStateException &mdash; consumed once. Collect to a List</td></tr>
+      </table></div>
+    </div></details>
+
+    <details class="q"><summary><span class="qn mono">04</span><span class="qt">Waits &mdash; the one Selenium answer that must be perfect</span><span class="chev">&rsaquo;</span></summary>
+    <div class="ans">
+      <p><strong>Implicit</strong> &mdash; global, every <code>findElement</code>, presence only. <strong>Explicit</strong> &mdash; one element, one condition, polls every 500ms. <strong>Fluent</strong> &mdash; explicit plus custom polling and ignored exceptions.</p>
+      <div class="breaks"><b>Never mix them</b><p>The explicit wait calls <code>findElement</code> internally while polling, and each of those inherits the implicit timeout &mdash; so a 10-second explicit wait under a 20-second implicit wait can block far longer than either number. Set the implicit wait to <code>Duration.ZERO</code> in the driver factory and use explicit waits everywhere.</p></div>
+      <p>Before a click, use <code>elementToBeClickable</code> &mdash; visible <em>and</em> enabled. <code>presenceOfElementLocated</code> only means it's in the DOM.</p>
+    </div></details>
+
+    <details class="q"><summary><span class="qn mono">05</span><span class="qt">The exception table</span><span class="chev">&rsaquo;</span></summary>
+    <div class="ans">
+      <div class="tablewrap"><table>
+        <tr><th>Exception</th><th>Cause</th><th>Fix</th></tr>
+        <tr><td class="mono">StaleElementReference</td><td>DOM node replaced by a re-render</td><td>Re-locate after the change; in a loop, re-find by index</td></tr>
+        <tr><td class="mono">ElementClickIntercepted</td><td>Overlay, sticky header or toast in the way</td><td>Wait for it to go invisible; scroll into view</td></tr>
+        <tr><td class="mono">ElementNotInteractable</td><td>Present but hidden, disabled or zero-size</td><td>Wait for clickable, not just present</td></tr>
+        <tr><td class="mono">NoSuchElement</td><td>findElement found nothing right now</td><td>Wrong locator, or a wait is needed</td></tr>
+        <tr><td class="mono">TimeoutException</td><td>Explicit wait's condition never became true</td><td>Wrong condition, or the app is genuinely broken</td></tr>
+        <tr><td class="mono">NoSuchSession / NoSuchWindow</td><td>Usually a shared driver across threads</td><td>ThreadLocal driver</td></tr>
+      </table></div>
+      <p><code>findElement</code> <strong>never returns null</strong> &mdash; it throws. For "assert not present", use <code>findElements(...).isEmpty()</code>.</p>
+    </div></details>
+
+    <details class="q"><summary><span class="qn mono">06</span><span class="qt">ThreadLocal driver &mdash; write it from memory</span><span class="chev">&rsaquo;</span></summary>
+    <div class="ans">
+<pre><code class="java">public final class DriverFactory {
+
+    private static final ThreadLocal&lt;WebDriver&gt; DRIVER = new ThreadLocal&lt;&gt;();
+
+    public static void init() {
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--disable-dev-shm-usage");
+        WebDriver driver = new ChromeDriver(options);
+        driver.manage().timeouts().implicitlyWait(Duration.ZERO);
+        DRIVER.set(driver);
+    }
+
+    public static WebDriver get() { return DRIVER.get(); }
+
+    public static void quit() {
+        if (DRIVER.get() != null) {
+            DRIVER.get().quit();     // quit(), not close()
+            DRIVER.remove();         // pooled threads are reused
+        }
+    }
+}</code></pre>
+      <p>The two details that get checked: <code>quit()</code> rather than <code>close()</code> (close leaves the session alive and leaks driver processes), and <code>remove()</code> so a reused thread doesn't inherit a dead reference.</p>
+    </div></details>
+
+    <details class="q"><summary><span class="qn mono">07</span><span class="qt">Selenium 4, and locator strategy</span><span class="chev">&rsaquo;</span></summary>
+    <div class="ans">
+      <p><strong>Selenium 4:</strong> W3C protocol only; <code>Options</code> replaces <code>DesiredCapabilities</code>; relative locators (<code>above</code>, <code>below</code>, <code>toLeftOf</code>, <code>near</code>); <code>Duration</code>-based timeouts; <code>newWindow(WindowType.TAB)</code>; CDP access; element screenshots; <code>getShadowRoot()</code>; Selenium Manager resolves drivers since 4.6 so WebDriverManager is no longer needed.</p>
+      <p><strong>Locators:</strong> id &rarr; name &rarr; CSS &rarr; relative XPath. Never absolute XPath. XPath only when you need text matching or upward traversal:</p>
+<pre><code class="java">//td[text()='INV-2043']/ancestor::tr//button[@title='Edit']
+//label[text()='Email']/following-sibling::input
+(//button[@class='approve'])[2]</code></pre>
+      <div class="say"><b>The lead-ish line worth keeping</b><p>"The highest-return thing is negotiating stable <code>data-test-id</code> attributes with the dev team. It kills more flakiness than any framework change."</p></div>
+    </div></details>
+
+  </div>
+</section>
+
+<section class="pane" id="pane-debug" role="tabpanel" hidden>
+  <p class="eyebrow">Read it, name the defect</p>
+  <h2 class="sec">Spot the bug</h2>
+  <p class="sec-note">Eighteen snippets weighted to your stack &mdash; API, BDD, pipeline and concurrency, with a few Java classics. <b>Say the defect out loud before revealing.</b></p>
+
+  <div class="grouphead"><h3>API &amp; REST Assured</h3><span>01&ndash;06</span></div>
+
+  <div class="drill">
+    <div class="drill-head"><span class="badge">Drill 01</span><span class="badge lang">REST Assured</span></div>
+    <h4>415 on a POST that works in Postman</h4>
+<pre><code class="java">given()
+    .body(userPayload)
+.when()
+    .post("/v1/users")
+.then()
+    .statusCode(201);</code></pre>
+    <details class="fix"><summary>Reveal</summary><div class="fixbody">
+      <p class="verdict"><b>Bug:</b> no <code>Content-Type</code> on a request with a body, so the server can't parse it.</p>
+      <p>Postman sets the header for you when you pick "raw / JSON", which is exactly why it works there. Fix: <code>.contentType(ContentType.JSON)</code>.</p>
+    </div></details>
+  </div>
+
+  <div class="drill">
+    <div class="drill-head"><span class="badge">Drill 02</span><span class="badge lang">REST Assured</span></div>
+    <h4>Assertion fails on correct data</h4>
+<pre><code class="java">.then()
+    .statusCode(200)
+    .body("id", equalTo("101"));      // response really contains "id": 101</code></pre>
+    <details class="fix"><summary>Reveal</summary><div class="fixbody">
+      <p class="verdict"><b>Bug:</b> type mismatch &mdash; JsonPath returns <code>101</code> as an <strong>Integer</strong>, and a String matcher never matches it.</p>
+      <p>Fix: <code>equalTo(101)</code>, or <code>.body("id.toString()", equalTo("101"))</code>. Related trap: a large id deserialises as <code>Long</code>, so even <code>equalTo(101)</code> (int) can fail.</p>
+    </div></details>
+  </div>
+
+  <div class="drill">
+    <div class="drill-head"><span class="badge">Drill 03</span><span class="badge lang">REST Assured</span></div>
+    <h4>ClassCastException, far from the cause</h4>
+<pre><code class="java">List&lt;User&gt; users = response.as(List.class);
+String email = users.get(0).getEmail();     // boom</code></pre>
+    <details class="fix"><summary>Reveal</summary><div class="fixbody">
+      <p class="verdict"><b>Bug:</b> type erasure &mdash; you get a <code>List&lt;LinkedHashMap&gt;</code>, not a <code>List&lt;User&gt;</code>.</p>
+      <p>The cast succeeds at the assignment and fails at first use, which is why the stack trace points at the wrong line. Fix: <code>response.as(new TypeRef&lt;List&lt;User&gt;&gt;() {})</code> or <code>jsonPath().getList("data", User.class)</code>.</p>
+    </div></details>
+  </div>
+
+  <div class="drill">
+    <div class="drill-head"><span class="badge">Drill 04</span><span class="badge lang">API design</span></div>
+    <h4>A PATCH test that wipes fields in production</h4>
+<pre><code class="java">User update = new User();
+update.setEmail("new@test.com");
+
+given().spec(spec).body(update)
+.when().patch("/users/101")
+.then().statusCode(200);</code></pre>
+    <details class="fix"><summary>Reveal</summary><div class="fixbody">
+      <p class="verdict"><b>Bug:</b> the POJO serialises every unset field as explicit <code>null</code>, so the PATCH clears name, phone and everything else.</p>
+      <p>Fix: <code>mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL)</code> so unset fields are omitted rather than sent as null. And add the assertion that catches it: GET afterwards and check the <em>other</em> fields survived.</p>
+    </div></details>
+  </div>
+
+  <div class="drill">
+    <div class="drill-head"><span class="badge">Drill 05</span><span class="badge lang">API</span></div>
+    <h4>Auth suite starts failing intermittently at scale</h4>
+<pre><code class="java">@BeforeMethod
+public void auth() {
+    token = given().contentType(JSON).body(creds)
+            .post("/auth").then().extract().path("token");
+}</code></pre>
+    <details class="fix"><summary>Reveal</summary><div class="fixbody">
+      <p class="verdict"><b>Bug:</b> authenticating before <em>every</em> test. With 200 tests running in parallel that's 200 auth calls in a burst &mdash; and the auth service rate-limits you with 429s.</p>
+      <p>The failures look random and are blamed on flakiness. Fix: authenticate once per suite, cache the token, refresh on expiry.</p>
+    </div></details>
+  </div>
+
+  <div class="drill">
+    <div class="drill-head"><span class="badge">Drill 06</span><span class="badge lang">async</span></div>
+    <h4>Async assertion that passes for the wrong reason</h4>
+<pre><code class="java">given().spec(spec).body(job).post("/jobs");
+Thread.sleep(5000);
+
+given().spec(spec).get("/jobs/latest")
+    .then().body("status", equalTo("COMPLETED"));</code></pre>
+    <details class="fix"><summary>Reveal</summary><div class="fixbody">
+      <p class="verdict"><b>Two bugs.</b> The fixed sleep, and <code>/jobs/latest</code>.</p>
+      <p><code>latest</code> is shared state &mdash; under parallel execution it may be another test's job, so the assertion passes while your job silently failed. Fix: extract <em>your</em> job id from the POST, poll that specific id with Awaitility, and assert the terminal state.</p>
+    </div></details>
+  </div>
+
+  <div class="grouphead"><h3>Cucumber &amp; BDD</h3><span>07&ndash;10</span></div>
+
+  <div class="drill">
+    <div class="drill-head"><span class="badge">Drill 07</span><span class="badge lang">Cucumber</span></div>
+    <h4>Scenarios pass alone, fail in parallel</h4>
+<pre><code class="java">public class BookingSteps {
+
+    private static Integer bookingId;          // shared across everything
+
+    @Given("a confirmed booking exists")
+    public void bookingExists() {
+        bookingId = api.create(aBooking().build()).getId();
+    }
+}</code></pre>
+    <details class="fix"><summary>Reveal</summary><div class="fixbody">
+      <p class="verdict"><b>Bug:</b> <code>static</code> state shared across scenarios and threads.</p>
+      <p>Two scenarios on different threads overwrite each other's booking id. Fix: a scenario-scoped <code>ScenarioContext</code> injected through the constructor, so PicoContainer gives each scenario a fresh instance. Same class of defect as a static WebDriver.</p>
+    </div></details>
+  </div>
+
+  <div class="drill">
+    <div class="drill-head"><span class="badge">Drill 08</span><span class="badge lang">Cucumber</span></div>
+    <h4>Screenshots on failure are always blank</h4>
+<pre><code class="java">@After(order = 0)
+public void screenshot(Scenario scenario) {
+    if (scenario.isFailed()) {
+        scenario.attach(shot(), "image/png", scenario.getName());
+    }
+}
+
+@After(order = 10)
+public void quitDriver() {
+    DriverFactory.quit();
+}</code></pre>
+    <details class="fix"><summary>Reveal</summary><div class="fixbody">
+      <p class="verdict"><b>Bug:</b> hook order is inverted. <code>@After</code> runs in <strong>descending</strong> order, so <code>order = 10</code> (quit) runs <em>first</em>.</p>
+      <p>The driver is gone by the time the screenshot hook fires. Fix: swap them &mdash; screenshot at the higher order, teardown at the lower.</p>
+    </div></details>
+  </div>
+
+  <div class="drill">
+    <div class="drill-head"><span class="badge">Drill 09</span><span class="badge lang">Gherkin</span></div>
+    <h4>Nothing throws. What would you reject in review?</h4>
+<pre><code class="java">Scenario: User cancels booking
+  Given I open the browser
+  And I navigate to "https://app.example.com/login"
+  When I enter "user@test.com" in the field with id "email"
+  And I enter "Passw0rd!" in the field with id "password"
+  And I click the button with id "submit"
+  And I wait 3 seconds
+  And I click the link with text "My Bookings"
+  Then I should see "Cancelled"</code></pre>
+    <details class="fix"><summary>Reveal</summary><div class="fixbody">
+      <p class="verdict"><b>Bug:</b> imperative Gherkin &mdash; a click-by-click script with Gherkin punctuation.</p>
+      <ul>
+        <li>No business reader will ever read this, so the collaboration value is zero</li>
+        <li>Every locator change rewrites the feature file</li>
+        <li><code>I wait 3 seconds</code> is a sleep in the specification</li>
+        <li>A hard-coded URL and a password in plain text</li>
+        <li>The <code>Then</code> asserts a string on screen, not a business outcome</li>
+      </ul>
+      <p>Rewrite: <code>Given I am signed in as a customer with a confirmed booking</code> / <code>When I cancel the booking</code> / <code>Then the booking status is "CANCELLED"</code>. The detail moves into step definitions.</p>
+    </div></details>
+  </div>
+
+  <div class="drill">
+    <div class="drill-head"><span class="badge">Drill 10</span><span class="badge lang">Cucumber</span></div>
+    <h4>Suite goes green after a refactor &mdash; suspiciously green</h4>
+<pre><code class="java">@Then("the refund should be {int} percent")
+public void refundShouldBe(int percent) {
+    int actual = context.get("refundPercent", Integer.class);
+    if (actual != percent) {
+        System.out.println("Refund mismatch: expected " + percent + " got " + actual);
+    }
+}</code></pre>
+    <details class="fix"><summary>Reveal</summary><div class="fixbody">
+      <p class="verdict"><b>Bug:</b> the step prints instead of asserting, so it can never fail.</p>
+      <p>Cucumber marks a step as failed only when it throws. Fix: <code>assertThat(actual).isEqualTo(percent)</code>. This is the highest-value thing to look for in any test code review &mdash; <em>can this test fail at all?</em></p>
+    </div></details>
+  </div>
+
+  <div class="grouphead"><h3>Pipeline, Docker &amp; concurrency</h3><span>11&ndash;18</span></div>
+
+  <div class="drill">
+    <div class="drill-head"><span class="badge">Drill 11</span><span class="badge lang">Jenkins</span></div>
+    <h4>A build that is green with zero tests</h4>
+<pre><code class="java">post {
+    always {
+        junit testResults: '**/target/surefire-reports/*.xml',
+              allowEmptyResults: true
+    }
+}</code></pre>
+    <details class="fix"><summary>Reveal</summary><div class="fixbody">
+      <p class="verdict"><b>Bug:</b> <code>allowEmptyResults: true</code> means a run that executed <em>no tests</em> passes.</p>
+      <p>A bad tag expression, a renamed class or a broken glue path silently produces a green build with nothing run. Fix: <code>allowEmptyResults: false</code> so "no tests" fails loudly.</p>
+    </div></details>
+  </div>
+
+  <div class="drill">
+    <div class="drill-head"><span class="badge">Drill 12</span><span class="badge lang">Jenkins</span></div>
+    <h4>Containers pile up on the agent</h4>
+<pre><code class="java">stages {
+    stage('Grid')  { steps { sh 'docker compose up -d' } }
+    stage('Test')  { steps { sh 'mvn test' } }
+    stage('Down')  { steps { sh 'docker compose down' } }
+}</code></pre>
+    <details class="fix"><summary>Reveal</summary><div class="fixbody">
+      <p class="verdict"><b>Bug:</b> teardown is a stage, so it's skipped when the Test stage fails.</p>
+      <p>Every failing build leaks a grid. Fix: move it to <code>post { always { sh 'docker compose down || true' } }</code>. The <code>|| true</code> stops a cleanup failure masking the real result.</p>
+    </div></details>
+  </div>
+
+  <div class="drill">
+    <div class="drill-head"><span class="badge">Drill 13</span><span class="badge lang">Docker</span></div>
+    <h4>Chrome crashes in CI, works locally</h4>
+<pre><code class="java">services:
+  chrome:
+    image: selenium/node-chrome:4.25
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub</code></pre>
+    <details class="fix"><summary>Reveal</summary><div class="fixbody">
+      <p class="verdict"><b>Bug:</b> no <code>shm_size</code>.</p>
+      <p>Docker gives a container 64MB of shared memory; Chrome needs far more and dies with "session deleted because of page crash" or "tab crashed". Fix: <code>shm_size: 2gb</code>, or pass <code>--disable-dev-shm-usage</code> in ChromeOptions.</p>
+    </div></details>
+  </div>
+
+  <div class="drill">
+    <div class="drill-head"><span class="badge">Drill 14</span><span class="badge lang">Docker</span></div>
+    <h4>Suite can't reach the grid from inside compose</h4>
+<pre><code class="java">WebDriver driver = new RemoteWebDriver(
+        new URL("http://localhost:4444/wd/hub"), options);</code></pre>
+    <details class="fix"><summary>Reveal</summary><div class="fixbody">
+      <p class="verdict"><b>Bug:</b> <code>localhost</code> inside a container means <em>that container</em>, not the host.</p>
+      <p>Works when the suite runs on the host; fails when the suite is itself containerised. Fix: address the hub by its compose <strong>service name</strong> &mdash; <code>http://selenium-hub:4444</code> &mdash; and make the URL configurable rather than hard-coded.</p>
+    </div></details>
+  </div>
+
+  <div class="drill">
+    <div class="drill-head"><span class="badge">Drill 15</span><span class="badge lang">Maven</span></div>
+    <h4>"No tests to run" &mdash; but the tests are right there</h4>
+    <p class="prompt">Class is <code>src/test/java/tests/LoginValidation.java</code>, full of <code>@Test</code> methods. <code>mvn test</code> reports zero.</p>
+    <details class="fix"><summary>Reveal</summary><div class="fixbody">
+      <p class="verdict"><b>Bug:</b> the class name doesn't match Surefire's default include patterns.</p>
+      <p>Surefire only picks up <code>Test*.java</code>, <code>*Test.java</code>, <code>*Tests.java</code> and <code>*TestCase.java</code>. Fix: rename, or point Surefire at a <code>suiteXmlFile</code>, or set explicit <code>&lt;includes&gt;</code>.</p>
+    </div></details>
+  </div>
+
+  <div class="drill">
+    <div class="drill-head"><span class="badge">Drill 16</span><span class="badge lang">Java</span></div>
+    <h4>A retry helper that hangs the build</h4>
+<pre><code class="java">try {
+    Thread.sleep(delay);
+} catch (InterruptedException e) {
+    // ignore
+}</code></pre>
+    <details class="fix"><summary>Reveal</summary><div class="fixbody">
+      <p class="verdict"><b>Bug:</b> swallowing <code>InterruptedException</code> without restoring the interrupt flag.</p>
+      <p>The thread's interrupted status is cleared when the exception is thrown. Swallowing it means a pool shutdown or timeout can no longer stop this thread &mdash; it keeps looping and the build hangs until the job timeout kills it.</p>
+      <p>Fix: <code>Thread.currentThread().interrupt();</code> then rethrow or return.</p>
+    </div></details>
+  </div>
+
+  <div class="drill">
+    <div class="drill-head"><span class="badge">Drill 17</span><span class="badge lang">Java</span></div>
+    <h4>Parallel results come back short, at random</h4>
+<pre><code class="java">List&lt;Response&gt; results = new ArrayList&lt;&gt;();
+
+ids.parallelStream().forEach(id -&gt; {
+    results.add(api.fetch(id));
+});</code></pre>
+    <details class="fix"><summary>Reveal</summary><div class="fixbody">
+      <p class="verdict"><b>Bug:</b> <code>ArrayList</code> isn't thread-safe, and <code>forEach</code> on a parallel stream runs on many threads.</p>
+      <p>Concurrent <code>add()</code> loses elements or corrupts the internal array &mdash; sometimes an exception, more often just a short list, which is worse because it passes.</p>
+      <p>Fix: <code>ids.parallelStream().map(api::fetch).collect(Collectors.toList())</code> &mdash; <code>collect</code> is designed to combine per-thread results safely. Never mutate shared state from a stream.</p>
+    </div></details>
+  </div>
+
+  <div class="drill">
+    <div class="drill-head"><span class="badge">Drill 18</span><span class="badge lang">design</span></div>
+    <h4>Nothing throws. What's wrong with this page object?</h4>
+<pre><code class="java">public class LoginPage {
+    WebDriver driver;
+
+    public WebElement getUsernameField() {
+        return driver.findElement(By.id("userName"));
+    }
+    public WebElement getSignInButton() {
+        return driver.findElement(By.cssSelector("button[type='submit']"));
+    }
+}</code></pre>
+    <details class="fix"><summary>Reveal</summary><div class="fixbody">
+      <p class="verdict"><b>Bug:</b> it's a locator dictionary, not a page object.</p>
+      <ul>
+        <li>Returning <code>WebElement</code> leaks the Selenium API back into the test</li>
+        <li>No reuse &mdash; the same three lines get copy-pasted everywhere</li>
+        <li>Nowhere to put the waiting</li>
+        <li>No navigation model; an action method should return the next page object</li>
+      </ul>
+      <p>Should be <code>public DashboardPage loginAs(String user, String pass)</code>. Finding a defect in code that works is the senior version of this question.</p>
+    </div></details>
+  </div>
+
+</section>
+
+<section class="pane" id="pane-sheet" role="tabpanel" hidden>
+  <style>
+    #pane-sheet .sheetcols{columns:3;column-gap:22px;}
+    @media (max-width:900px){ #pane-sheet .sheetcols{columns:2;} }
+    @media (max-width:600px){ #pane-sheet .sheetcols{columns:1;} }
+    #pane-sheet .blk{break-inside:avoid;page-break-inside:avoid;margin:0 0 15px;}
+    #pane-sheet .blk h3{
+      font-family:"IBM Plex Sans",sans-serif;font-size:11px;font-weight:700;
+      letter-spacing:.11em;text-transform:uppercase;color:var(--accent);
+      margin:0 0 6px;padding-bottom:3px;border-bottom:1px solid var(--line-2);
+    }
+    #pane-sheet .blk.hot h3{color:var(--fail);}
+    #pane-sheet dl{margin:0;}
+    #pane-sheet dt{font-family:"JetBrains Mono",monospace;font-size:10.5px;font-weight:600;color:var(--ink);margin-top:6px;}
+    #pane-sheet dt:first-child{margin-top:0;}
+    #pane-sheet dd{margin:1px 0 0;color:var(--ink-2);font-size:13px;line-height:1.38;}
+    #pane-sheet dd b{color:var(--ink);font-weight:500;}
+    #pane-sheet ul.tight{margin:0;padding-left:15px;}
+    #pane-sheet ul.tight li{margin-bottom:3px;color:var(--ink-2);font-size:13px;line-height:1.38;}
+    #pane-sheet ul.tight li b{color:var(--ink);font-weight:500;}
+    #pane-sheet code{font-size:11.5px;background:none;padding:0;}
+    #pane-sheet .bigrule{
+      break-inside:avoid;margin:0 0 15px;border:1.5px solid var(--ink);
+      border-radius:5px;padding:9px 11px;background:var(--surface);
+    }
+    #pane-sheet .bigrule h4{
+      font-family:"IBM Plex Sans",sans-serif;font-size:11px;font-weight:700;
+      letter-spacing:.1em;text-transform:uppercase;margin:0 0 5px;
+    }
+    #pane-sheet .bigrule p{margin:0;font-size:13px;color:var(--ink-2);max-width:none;}
+    #pane-sheet .bigrule p + p{margin-top:5px;}
+    #pane-sheet .printhint{font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--muted);}
+
+    @media print{
+      #pane-sheet .printhint{display:none;}
+      #pane-sheet .sheetcols{columns:3;column-gap:6mm;}
+      #pane-sheet .blk{margin-bottom:8px;}
+      #pane-sheet .blk h3{font-size:7.6pt;margin-bottom:3px;}
+      #pane-sheet dt{font-size:7.6pt;margin-top:4px;}
+      #pane-sheet dd, #pane-sheet ul.tight li{font-size:8.3pt;line-height:1.28;}
+      #pane-sheet .bigrule{padding:6px 8px;margin-bottom:8px;}
+      #pane-sheet .bigrule p{font-size:8.3pt;}
+      #pane-sheet h2.sec{font-size:15pt;}
+      #pane-sheet .sec-note{font-size:8.4pt;margin-bottom:8px;}
+    }
+  </style>
+
+  <h2 class="sec">Carry Sheet</h2>
+  <p class="sec-note">Every number and rule worth having in front of you. <span class="printhint">Ctrl&#8239;+&#8239;P prints just this page, three columns on A4.</span></p>
+
+  <div class="sheetcols">
+
+    <div class="blk hot">
+      <h3>REST Assured &mdash; gotchas</h3>
+      <dl>
+        <dt>415</dt><dd>Body with no <code>contentType</code></dd>
+        <dt>406 / 418 / odd 4xx</dt><dd><code>setAccept(ContentType.JSON)</code> sends a multi-value header &mdash; pin literal <code>application/json</code></dd>
+        <dt>Matcher never matches</dt><dd><code>equalTo("101")</code> vs numeric JSON &rarr; Integer. Big ids come back Long</dd>
+        <dt>ClassCastException on a list</dt><dd><code>as(List.class)</code> &rarr; use <code>TypeRef</code></dd>
+        <dt>Breaks on a new field</dt><dd>Set <code>FAIL_ON_UNKNOWN_PROPERTIES=false</code></dd>
+        <dt>PATCH wipes fields</dt><dd>POJO serialising nulls &rarr; <code>Include.NON_NULL</code></dd>
+        <dt>PKIX path building failed</dt><dd>TLS proxy / self-signed &rarr; <code>relaxedHTTPSValidation()</code></dd>
+        <dt>Double-encoded params</dt><dd><code>urlEncodingEnabled(false)</code></dd>
+      </dl>
+    </div>
+
+    <div class="blk">
+      <h3>GPath</h3>
+      <ul class="tight">
+        <li><code>users.findAll { it.age &gt; 30 }.name</code></li>
+        <li><code>users.find { it.id == 5 }.email</code></li>
+        <li><code>orders.total.sum()</code> &middot; <code>.max()</code> &middot; <code>.min()</code></li>
+        <li><code>items.flatten().sku</code></li>
+        <li><code>users.findAll { it.active }.size()</code></li>
+      </ul>
+      <p style="margin:6px 0 0;font-size:12.5px;color:var(--muted)">Groovy, not Java. <code>it</code> is implicit; <code>find</code> = first, <code>findAll</code> = list.</p>
+    </div>
+
+    <div class="blk">
+      <h3>Status codes</h3>
+      <dl>
+        <dt>401 vs 403</dt><dd>Not authenticated &middot; vs authenticated, not permitted</dd>
+        <dt>400 vs 422</dt><dd>Malformed &middot; vs valid syntax, business rule failed</dd>
+        <dt>201 / 204</dt><dd>Created (+ Location) &middot; No Content</dd>
+        <dt>409 / 429</dt><dd>Conflict &middot; Rate limited</dd>
+        <dt>Idempotent</dt><dd>GET PUT DELETE HEAD. <b>Not POST.</b> PATCH not guaranteed</dd>
+        <dt>PUT vs PATCH</dt><dd>Full replace (omitted fields nulled) &middot; vs partial</dd>
+      </dl>
+    </div>
+
+    <div class="blk">
+      <h3>API test layers</h3>
+      <ul class="tight">
+        <li>Status, headers, Location</li>
+        <li>Body values, types, <b>schema</b></li>
+        <li>Negative + boundary + unicode</li>
+        <li>AuthN, AuthZ, <b>IDOR</b>, mass assignment</li>
+        <li>Persistence: POST then GET</li>
+        <li>Idempotency + concurrent update</li>
+        <li>Contract (Pact) &middot; response time smoke</li>
+      </ul>
+    </div>
+
+    <div class="blk hot">
+      <h3>Cucumber</h3>
+      <dl>
+        <dt>State between steps</dt><dd>DI-scoped <code>ScenarioContext</code> via constructor. <b>Never static</b></dd>
+        <dt>Hook order</dt><dd><code>@Before</code> <b>ascending</b>, <code>@After</code> <b>descending</b>. Screenshot high, teardown low</dd>
+        <dt>Tags</dt><dd><code>@smoke and not @wip</code></dd>
+        <dt>Parallel</dt><dd>JUnit5: <code>junit-platform.properties</code>. TestNG: <code>@DataProvider(parallel=true)</code></dd>
+        <dt>Data table &rarr; object</dt><dd><code>@DataTableType</code></dd>
+        <dt>Custom types</dt><dd><code>@ParameterType</code></dd>
+      </dl>
+    </div>
+
+    <div class="blk">
+      <h3>BDD anti-patterns</h3>
+      <ul class="tight">
+        <li>Imperative click-by-click Gherkin</li>
+        <li>Written after the code, by QA alone</li>
+        <li>Shared mutable state between scenarios</li>
+        <li>Scenario Outline as a data loop</li>
+        <li>Conjunction steps (<i>and&hellip;and&hellip;</i>)</li>
+        <li>Technical vocabulary in the feature file</li>
+      </ul>
+      <p style="margin:6px 0 0;font-size:12.5px;color:var(--muted)"><b>"When not worth it?"</b> If the business never reads the features, you've bought an indirection layer and nothing else.</p>
+    </div>
+
+    <div class="blk">
+      <h3>Pipeline budgets</h3>
+      <dl>
+        <dt>PR</dt><dd>Unit + API smoke + few UI &mdash; <b>under 10 min</b>, blocks merge</dd>
+        <dt>Merge to main</dt><dd>Full API + UI smoke, ~20 min</dd>
+        <dt>Nightly</dt><dd>Full regression, all browsers</dd>
+        <dt>Halve a 3h suite</dt><dd>UI setup &rarr; API; shard; drop UI duplicating API; cache deps; impacted-tests on PR</dd>
+      </dl>
+    </div>
+
+    <div class="blk hot">
+      <h3>Docker &amp; Grid</h3>
+      <dl>
+        <dt>Chrome crashes in CI</dt><dd><code>shm_size: 2gb</code> or <code>--disable-dev-shm-usage</code></dd>
+        <dt>Can't reach hub</dt><dd>Use the <b>service name</b>, not localhost</dd>
+        <dt>Dockerfile caching</dt><dd>COPY pom &rarr; go-offline &rarr; COPY src</dd>
+        <dt>Grid 4 modes</dt><dd>standalone &middot; hub+node &middot; distributed &middot; dynamic</dd>
+        <dt>Teardown</dt><dd><code>post { always { compose down } }</code>, never a stage</dd>
+        <dt>Zero-test green build</dt><dd><code>allowEmptyResults: false</code></dd>
+      </dl>
+    </div>
+
+    <div class="bigrule">
+      <h4>Design round &mdash; CRISP</h4>
+      <p><b>C</b>larify (ask first, 90s) &middot; <b>R</b>isks (money, data, lockout) &middot; <b>I</b>dentify layers (and what you'd skip) &middot; <b>S</b>pecifics (real cases) &middot; <b>P</b>ipeline &amp; ownership.</p>
+      <p>Running out of time? Cut specifics, never the pipeline. <b>Always end on who owns red.</b></p>
+    </div>
+
+    <div class="blk">
+      <h3>Java traps</h3>
+      <ul class="tight">
+        <li><code>Integer</code> cache &minus;128..127 &rarr; never <code>==</code> on wrappers</li>
+        <li><code>int n = map.get(k)</code> &rarr; NPE unboxing null</li>
+        <li><code>7/9*100</code> = 0 &rarr; integer division</li>
+        <li>remove in for-each &rarr; CME</li>
+        <li><code>toMap</code> dupes &rarr; IllegalState; needs merge fn</li>
+        <li><code>toMap</code> after <code>sorted</code> &rarr; add <code>LinkedHashMap::new</code></li>
+        <li>static <code>SimpleDateFormat</code> &rarr; not thread-safe</li>
+        <li>Stream consumed once</li>
+        <li>Swallowed <code>InterruptedException</code> &rarr; restore the flag</li>
+        <li>Mutating a list from <code>parallelStream</code> &rarr; use <code>collect</code></li>
+      </ul>
+    </div>
+
+    <div class="blk">
+      <h3>Selenium essentials</h3>
+      <dl>
+        <dt>Never mix waits</dt><dd>Implicit <b>zero</b>, explicit everywhere</dd>
+        <dt>Before a click</dt><dd><code>elementToBeClickable</code></dd>
+        <dt>Stale</dt><dd>DOM replaced &rarr; re-locate</dd>
+        <dt>findElement</dt><dd>Throws, never null. Use <code>findElements().isEmpty()</code></dd>
+        <dt>close vs quit</dt><dd>Window &middot; vs session. Teardown = <code>quit()</code> + <code>remove()</code></dd>
+        <dt>HashMap</dt><dd>16 / 0.75 / treeify 8 / untreeify 6</dd>
+      </dl>
+    </div>
+
+    <div class="bigrule">
+      <h4>In the room</h4>
+      <p><b>Think out loud</b> while coding &middot; <b>ask before designing</b> &middot; <b>name the edge case</b> before they do (empty, single, duplicate, null, overflow) &middot; <b>state the complexity</b> &middot; answer, then add the trade-off.</p>
+      <p>Don't know? "I haven't used that directly. My understanding is X, and I'd approach it by Y. Is that close?" Then <b>reset</b> &mdash; don't replay Q4 during Q5.</p>
+    </div>
+
+    <div class="blk">
+      <h3>Ask them</h3>
+      <ul class="tight">
+        <li>"What does the test estate look like today &mdash; building or stabilising?"</li>
+        <li>"Who owns a red pipeline?"</li>
+        <li>"Do devs write tests, or is it QA-owned?"</li>
+        <li>"What's the slowest part of your feedback loop right now?"</li>
+      </ul>
+    </div>
+
+  </div>
+</section>
+
+</main>
+
+<footer>
+  Built for a Senior SDET loop. Progress is saved in this browser only.
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var tabs = Array.prototype.slice.call(document.querySelectorAll(".tab"));
+  var panes = {};
+  tabs.forEach(function (t) { panes[t.dataset.pane] = document.getElementById("pane-" + t.dataset.pane); });
+
+  function show(name) {
+    tabs.forEach(function (t) {
+      var on = t.dataset.pane === name;
+      t.setAttribute("aria-selected", on ? "true" : "false");
+      panes[t.dataset.pane].hidden = !on;
+    });
+    try { localStorage.setItem("sdet.tab", name); } catch (e) {}
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }
+  tabs.forEach(function (t) { t.addEventListener("click", function () { show(t.dataset.pane); }); });
+  try { var sv = localStorage.getItem("sdet.tab"); if (sv && panes[sv]) show(sv); } catch (e) {}
+
+  var revealBtn = document.getElementById("revealAll");
+  if (revealBtn) {
+    revealBtn.addEventListener("click", function () {
+      var all = document.querySelectorAll("#pane-coding details.fix");
+      var anyClosed = Array.prototype.some.call(all, function (d) { return !d.open; });
+      Array.prototype.forEach.call(all, function (d) { d.open = anyClosed; });
+      revealBtn.textContent = anyClosed ? "Hide all solutions" : "Reveal all solutions";
+    });
+  }
+
+  var KEY = "sdet.done";
+  var done = {};
+  try { done = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { done = {}; }
+
+  var boxes = [];
+  Array.prototype.forEach.call(document.querySelectorAll("ul.tasks li"), function (li, i) {
+    var input = li.querySelector("input");
+    var label = li.querySelector("label");
+    if (!input || !label) return;
+    var id = "task-" + i;
+    input.id = id;
+    label.setAttribute("for", id);
+    var k = (label.textContent || "").replace(/\s+/g, " ").trim().toLowerCase().slice(0, 60);
+    if (done[k]) input.checked = true;
+    boxes.push(input);
+    input.addEventListener("change", function () {
+      if (input.checked) { done[k] = 1; } else { delete done[k]; }
+      try { localStorage.setItem(KEY, JSON.stringify(done)); } catch (e) {}
+      paint();
+    });
+  });
+
+  var barfill = document.getElementById("barfill");
+  var pct = document.getElementById("pct");
+
+  function paint() {
+    var n = boxes.length;
+    var c = boxes.filter(function (b) { return b.checked; }).length;
+    barfill.style.width = n ? (c / n * 100).toFixed(1) + "%" : "0%";
+    pct.textContent = c + " / " + n + " done";
+  }
+
+  var KW = ["public","private","protected","static","final","abstract","class","interface","extends",
+            "implements","import","new","return","if","else","for","while","try","catch","finally",
+            "throw","throws","void","int","long","double","boolean","char","var","this","super",
+            "null","true","false","String","List","Map","Set","Optional","byte","Feature","Scenario",
+            "Given","When","Then","And","Background","Examples","pipeline","stages","stage","steps",
+            "post","always","failure","agent","environment","options","parameters","services","jobs"];
+  var RE = new RegExp(
+    "(\\/\\/[^\\n]*|\\/\\*[\\s\\S]*?\\*\\/|#[^\\n]*)" +
+    "|(\"(?:\\\\.|[^\"\\\\])*\"|'(?:\\\\.|[^'\\\\])*')" +
+    "|(@[A-Za-z_][A-Za-z0-9_]*)" +
+    "|(\\b\\d[\\d_]*(?:\\.\\d+)?[LlDdFf]?\\b)" +
+    "|(\\b(?:" + KW.join("|") + ")\\b)", "g");
+
+  function esc(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+
+  Array.prototype.forEach.call(document.querySelectorAll("pre code"), function (block) {
+    var src = block.textContent, out = "", last = 0, m;
+    RE.lastIndex = 0;
+    while ((m = RE.exec(src)) !== null) {
+      out += esc(src.slice(last, m.index));
+      var cls = m[1] ? "c" : m[2] ? "s" : m[3] ? "a" : m[4] ? "nm" : "k";
+      out += '<span class="' + cls + '">' + esc(m[0]) + "</span>";
+      last = m.index + m[0].length;
+    }
+    out += esc(src.slice(last));
+    block.innerHTML = out;
+  });
+
+  paint();
+})();
+</script>
+</body>
+</html>
