@@ -916,6 +916,14 @@
   body{ background:#fff !important; }
 }
 
+
+  .altwrap{margin-top:15px;padding-top:12px;border-top:1px dashed var(--line-2);}
+  .altlabel{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--accent);font-weight:600;display:block;margin-bottom:2px;}
+  .leadwith{background:var(--accent-soft);border-left:2px solid var(--accent);
+    padding:9px 13px;border-radius:0 6px 6px 0;margin:13px 0 0;font-size:14.5px;color:var(--ink-2);}
+  .leadwith b{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--accent);display:block;margin-bottom:3px;font-weight:600;}
 </style>
 </head>
 <body>
@@ -1495,7 +1503,7 @@ Map&lt;String, Optional&lt;Employee&gt;&gt; topPaid = employees.stream()
 <section class="pane" id="pane-programs" role="tabpanel" hidden>
   <p class="eyebrow">Day 3 &middot; write these by hand</p>
   <h2 class="sec">Coding programs</h2>
-  <p class="sec-note">Twenty-six programs that actually get asked, each with a working solution and the follow-up question that comes after it. <b>Attempt on paper first, then reveal.</b> The point isn't to memorise the code — it's that her hand stops hesitating over <code>for</code> loops and generics.</p>
+  <p class="sec-note">Twenty-six programs that actually get asked, each with a working solution, <b>one or two alternative ways to write it</b>, and a note on which one to lead with. <b>Attempt on paper first, then reveal.</b> The point isn't to memorise the code — it's that her hand stops hesitating over <code>for</code> loops and generics.</p>
 
   <div class="toolbar">
     <button class="ghost" id="revealAll">Reveal all solutions</button>
@@ -1527,7 +1535,10 @@ Map&lt;String, Optional&lt;Employee&gt;&gt; topPaid = employees.stream()
       <span class="cplx">O(n) time &middot; O(n) space &middot; two-pointer swap, in place on the char array</span>
       <p class="note"><b>Why a <code>for</code> loop and not a <code>while</code>:</b> a <code>for</code> declares both pointers, the stop condition and both moves on one line, so you can read the whole loop at a glance. Writing <code>chars[left++] = chars[right]</code> inside a <code>while</code> hides the movement inside the assignment &mdash; it works, but it's the kind of line that's easy to get wrong under pressure on a whiteboard. Keep the swap and the movement separate.</p>
       <p class="note"><b>Follow-up:</b> "Do it recursively." &mdash; <code>return reverse(s.substring(1)) + s.charAt(0);</code> with <code>if (s.isEmpty()) return s;</code> as the base case. Then say the honest thing: it's elegant but allocates a new String per frame and stack-overflows on long input, so the iterative version is what she'd ship.</p>
-    </div></details>
+    <div class="altwrap"><span class="altlabel">Another way to say it</span><p class="note"><b>If they don&rsquo;t ban it</b> &mdash; ask first, then say this:</p><pre><code class="java">return new StringBuilder(input).reverse().toString();</code></pre><p class="note"><b>Recursive</b> &mdash; elegant, but it allocates a String per frame and overflows the stack on long input:</p><pre><code class="java">public static String reverse(String s) {
+    if (s == null || s.length() &lt;= 1) return s;
+    return reverse(s.substring(1)) + s.charAt(0);
+}</code></pre></div><div class="leadwith"><b>Lead with</b>The two-pointer <code>for</code> loop. The question almost always bans <code>reverse()</code>, and the loop shows you can manipulate an array. Mention the other two as alternatives &mdash; that is what turns a correct answer into a confident one.</div></div></details>
   </div>
 
   <div class="drill">
@@ -1549,7 +1560,8 @@ Map&lt;String, Optional&lt;Employee&gt;&gt; topPaid = employees.stream()
 }</code></pre>
       <span class="cplx">O(n) time &middot; O(n) space for the cleaned copy</span>
       <p class="note"><b>The mark is in the cleanup.</b> Most candidates compare raw characters and fail on spaces and punctuation. Stripping non-alphanumerics and lower-casing first, unprompted, is what separates the answers.</p>
-    </div></details>
+    <div class="altwrap"><span class="altlabel">Another way to say it</span><p class="note"><b>Reverse and compare</b> &mdash; the shortest thing to say out loud:</p><pre><code class="java">String clean = s.replaceAll("[^A-Za-z0-9]", "").toLowerCase();
+return clean.equals(new StringBuilder(clean).reverse().toString());</code></pre></div><div class="leadwith"><b>Lead with</b>The two-pointer loop &mdash; it allocates no second string and exits on the first mismatch. Then add: &ldquo;or in one line, reverse it and compare, but that builds a whole extra string.&rdquo; Naming the trade-off is the part that scores.</div></div></details>
   </div>
 
   <div class="drill">
@@ -1622,7 +1634,22 @@ Map&lt;String, Optional&lt;Employee&gt;&gt; topPaid = employees.stream()
 }</code></pre>
       <span class="cplx">O(n log n) because of the sort</span>
       <p class="note"><b>Follow-up:</b> "Can you do it in O(n)?" Yes &mdash; count characters into a map (or an <code>int[26]</code> for pure lowercase letters), incrementing for the first string and decrementing for the second. If every count ends at zero, they're anagrams.</p>
-    </div></details>
+    <div class="altwrap"><span class="altlabel">Another way to say it</span><p class="note"><b>O(n) counting</b> &mdash; this is the follow-up they ask for, so have it ready:</p><pre><code class="java">public static boolean isAnagram(String a, String b) {
+    String x = a.replaceAll("\\s", "").toLowerCase();
+    String y = b.replaceAll("\\s", "").toLowerCase();
+    if (x.length() != y.length()) return false;
+
+    int[] counts = new int[26];
+    for (int i = 0; i &lt; x.length(); i++) {
+        counts[x.charAt(i) - 'a']++;
+        counts[y.charAt(i) - 'a']--;
+    }
+
+    for (int c : counts) {
+        if (c != 0) return false;
+    }
+    return true;
+}</code></pre><p class="note">The <code>int[26]</code> only works for plain a&ndash;z. For unicode, count into a <code>Map&lt;Character, Integer&gt;</code> the same way.</p></div><div class="leadwith"><b>Lead with</b>The sort-and-compare version &mdash; four lines and obviously correct. Then say &ldquo;that is O(n log n) because of the sort; if you want O(n) I would count characters instead&rdquo; and write the second one. Offering the upgrade unprompted is the whole game here.</div></div></details>
   </div>
 
   <div class="drill">
@@ -1666,7 +1693,19 @@ Map&lt;String, Optional&lt;Employee&gt;&gt; topPaid = employees.stream()
     return result.toString();
 }</code></pre>
       <p class="note"><b>The detail worth saying out loud:</b> <code>Set.add()</code> returns a boolean, so the check and the insert happen in one operation. Most candidates write <code>if (!seen.contains(c)) { seen.add(c); ... }</code>, which works but does the lookup twice.</p>
-    </div></details>
+    <div class="altwrap"><span class="altlabel">Another way to say it</span><p class="note"><b>Stream version</b>:</p><pre><code class="java">return input.chars()
+        .distinct()
+        .mapToObj(c -&gt; String.valueOf((char) c))
+        .collect(Collectors.joining());</code></pre><p class="note"><b>LinkedHashSet</b> &mdash; same idea, more obvious:</p><pre><code class="java">Set&lt;Character&gt; unique = new LinkedHashSet&lt;&gt;();
+for (char c : input.toCharArray()) {
+    unique.add(c);
+}
+
+StringBuilder result = new StringBuilder();
+for (char c : unique) {
+    result.append(c);
+}
+return result.toString();</code></pre></div><div class="leadwith"><b>Lead with</b>The <code>seen.add(c)</code> version &mdash; one pass, and the fact that <code>Set.add()</code> returns a boolean is a good detail to point out. The stream one-liner is the follow-up if they ask for a Java 8 answer.</div></div></details>
   </div>
 
   <div class="drill">
@@ -1692,7 +1731,19 @@ Map&lt;String, Optional&lt;Employee&gt;&gt; topPaid = employees.stream()
     System.out.println("Words: " + words + ", vowels: " + vowels + ", consonants: " + consonants);
 }</code></pre>
       <p class="note"><b>The trap:</b> <code>"".split("\\s+")</code> returns an array of length 1 containing an empty string, so a naive word count returns 1 for an empty sentence. The <code>isEmpty()</code> guard is the whole point of the question.</p>
-    </div></details>
+    <div class="altwrap"><span class="altlabel">Another way to say it</span><p class="note"><b>Stream version</b>:</p><pre><code class="java">String trimmed = sentence.trim();
+
+long words = trimmed.isEmpty() ? 0
+        : Arrays.stream(trimmed.split("\\s+")).count();
+
+long vowels = trimmed.toLowerCase().chars()
+        .filter(c -&gt; "aeiou".indexOf(c) &gt;= 0)
+        .count();
+
+long consonants = trimmed.toLowerCase().chars()
+        .filter(Character::isLetter)
+        .filter(c -&gt; "aeiou".indexOf(c) &lt; 0)
+        .count();</code></pre></div><div class="leadwith"><b>Lead with</b>Either one. This program is easy enough that the marks are entirely in the empty-string edge case &mdash; say &ldquo;note that <code>"".split()</code> returns an array of length one, so I guard for empty&rdquo; before they ask.</div></div></details>
   </div>
 
   <div class="drill">
@@ -1708,7 +1759,12 @@ Map&lt;String, Optional&lt;Employee&gt;&gt; topPaid = employees.stream()
                     Collectors.counting()));
 }</code></pre>
       <p class="note"><b>Follow-up:</b> "Now give me only the words appearing more than once, sorted by count descending." That's program 17 stitched onto this one &mdash; a very common two-part question.</p>
-    </div></details>
+    <div class="altwrap"><span class="altlabel">Another way to say it</span><p class="note"><b>Plain loop with <code>merge</code></b> &mdash; often easier to say than the collector:</p><pre><code class="java">Map&lt;String, Integer&gt; counts = new LinkedHashMap&lt;&gt;();
+
+for (String word : sentence.toLowerCase().trim().split("\\s+")) {
+    counts.merge(word, 1, Integer::sum);
+}
+return counts;</code></pre></div><div class="leadwith"><b>Lead with</b>Whichever you can write without hesitating. <code>merge(word, 1, Integer::sum)</code> is worth knowing either way &mdash; it replaces the <code>getOrDefault</code> plus <code>put</code> pair, and interviewers notice it.</div></div></details>
   </div>
 
   <!-- ---- ARRAYS & NUMBERS ---- -->
@@ -1772,7 +1828,19 @@ Map&lt;String, Optional&lt;Employee&gt;&gt; topPaid = employees.stream()
 }</code></pre>
       <span class="cplx">O(n) time &middot; O(n) space &middot; beats the nested-loop O(n&sup2;) answer</span>
       <p class="note"><b>Why a Set for the result:</b> an element appearing three times would otherwise be reported twice. <code>{4,4,4}</code> is the input that exposes the bug.</p>
-    </div></details>
+    <div class="altwrap"><span class="altlabel">Another way to say it</span><p class="note"><b>Stream version</b>:</p><pre><code class="java">Set&lt;Integer&gt; duplicates = Arrays.stream(numbers).boxed()
+        .collect(Collectors.groupingBy(n -&gt; n, Collectors.counting()))
+        .entrySet().stream()
+        .filter(e -&gt; e.getValue() &gt; 1)
+        .map(Map.Entry::getKey)
+        .collect(Collectors.toCollection(LinkedHashSet::new));</code></pre><p class="note"><b>Sort then scan neighbours</b> &mdash; O(n log n) time but O(1) extra space, if they constrain memory:</p><pre><code class="java">Arrays.sort(numbers);
+Set&lt;Integer&gt; duplicates = new LinkedHashSet&lt;&gt;();
+
+for (int i = 1; i &lt; numbers.length; i++) {
+    if (numbers[i] == numbers[i - 1]) {
+        duplicates.add(numbers[i]);
+    }
+}</code></pre></div><div class="leadwith"><b>Lead with</b>The two-Set version &mdash; O(n), and the <code>!seen.add(n)</code> idiom reads well. Mention sort-and-scan as your answer if they say &ldquo;no extra space&rdquo;.</div></div></details>
   </div>
 
   <div class="drill">
@@ -1791,7 +1859,25 @@ Map&lt;String, Optional&lt;Employee&gt;&gt; topPaid = employees.stream()
 }</code></pre>
       <span class="cplx">O(n) time &middot; O(1) space &middot; no sorting, no extra collection</span>
       <p class="note"><b>Follow-up:</b> "What if n is large enough to overflow?" Use <code>long</code> for the sums, or XOR every index with every value &mdash; the pairs cancel out and the missing number survives, with no overflow risk at all.</p>
-    </div></details>
+    <div class="altwrap"><span class="altlabel">Another way to say it</span><p class="note"><b>XOR</b> &mdash; no overflow risk at all, which is exactly the follow-up they ask:</p><pre><code class="java">public static int missingNumber(int[] numbers, int n) {
+    int xor = 0;
+
+    for (int i = 1; i &lt;= n; i++) {
+        xor ^= i;            // XOR of every expected value
+    }
+    for (int value : numbers) {
+        xor ^= value;        // pairs cancel out, the missing one survives
+    }
+    return xor;
+}</code></pre><p class="note"><b>Presence array</b> &mdash; the most obvious version, if the maths deserts you:</p><pre><code class="java">boolean[] present = new boolean[n + 1];
+for (int value : numbers) {
+    present[value] = true;
+}
+
+for (int i = 1; i &lt;= n; i++) {
+    if (!present[i]) return i;
+}
+return -1;</code></pre></div><div class="leadwith"><b>Lead with</b>The sum formula &mdash; one line, obviously O(n) time and O(1) space. Then volunteer: &ldquo;for a large n I would use <code>long</code> for the sums, or XOR, which cannot overflow at all.&rdquo;</div></div></details>
   </div>
 
   <div class="drill">
@@ -1835,7 +1921,27 @@ a = a ^ b;</code></pre>
 }</code></pre>
       <span class="cplx">O(n&sup2;) worst case &middot; O(n) on already-sorted input thanks to the flag</span>
       <p class="note">Two details interviewers look for: the inner loop bound is <code>length - 1 - i</code> (the tail is already sorted after each pass), and the <code>swapped</code> flag. Without either it still works, but it signals she reproduced it from memory rather than understood it.</p>
-    </div></details>
+    <div class="altwrap"><span class="altlabel">Another way to say it</span><p class="note"><b>Selection sort</b> &mdash; fewer swaps, same complexity:</p><pre><code class="java">for (int i = 0; i &lt; arr.length - 1; i++) {
+    int minIndex = i;
+
+    for (int j = i + 1; j &lt; arr.length; j++) {
+        if (arr[j] &lt; arr[minIndex]) {
+            minIndex = j;
+        }
+    }
+
+    int temp = arr[minIndex];
+    arr[minIndex] = arr[i];
+    arr[i] = temp;
+}</code></pre><p class="note"><b>Insertion sort</b> &mdash; O(n) on nearly-sorted data, which is the interesting thing to say about it:</p><pre><code class="java">for (int i = 1; i &lt; arr.length; i++) {
+    int key = arr[i];
+    int j = i - 1;
+
+    for (; j &gt;= 0 &amp;&amp; arr[j] &gt; key; j--) {
+        arr[j + 1] = arr[j];
+    }
+    arr[j + 1] = key;
+}</code></pre></div><div class="leadwith"><b>Lead with</b>Bubble sort with the <code>swapped</code> flag &mdash; it is what they expect, and the flag shows you understood it rather than memorised it. Knowing a second one by name, with a reason to prefer it, is the bonus.</div></div></details>
   </div>
 
   <div class="drill">
@@ -1854,7 +1960,13 @@ a = a ^ b;</code></pre>
     }
 }</code></pre>
       <p class="note"><b>Follow-up:</b> "Recursively?" &mdash; <code>fib(n) = fib(n-1) + fib(n-2)</code> with <code>n &lt;= 1</code> returning <code>n</code>. Then add the point that gets the nod: naive recursion is O(2&#8319;) and recomputes the same values endlessly, so memoise it with a map or array if n is anything but tiny.</p>
-    </div></details>
+    <div class="altwrap"><span class="altlabel">Another way to say it</span><p class="note"><b>Recursive with memoisation</b> &mdash; the answer to &ldquo;can you do it recursively?&rdquo; that avoids the exponential trap:</p><pre><code class="java">public static long fib(int n, Map&lt;Integer, Long&gt; memo) {
+    if (n &lt;= 1) return n;
+    return memo.computeIfAbsent(n, k -&gt; fib(k - 1, memo) + fib(k - 2, memo));
+}</code></pre><p class="note"><b>Stream</b> &mdash; if they ask for a Java 8 flavour:</p><pre><code class="java">Stream.iterate(new long[]{0, 1}, f -&gt; new long[]{f[1], f[0] + f[1]})
+      .limit(count)
+      .map(f -&gt; f[0])
+      .forEach(x -&gt; System.out.print(x + " "));</code></pre></div><div class="leadwith"><b>Lead with</b>The iterative loop &mdash; O(n) and no stack risk. When they ask for recursion, write it <em>and</em> say &ldquo;naive recursion is exponential because it recomputes the same values, so I would memoise&rdquo;. That sentence is the actual answer.</div></div></details>
   </div>
 
   <div class="drill">
@@ -1873,7 +1985,18 @@ a = a ^ b;</code></pre>
 }</code></pre>
       <span class="cplx">O(&radic;n) &middot; only odd divisors tested</span>
       <p class="note"><b>Follow-up they always ask:</b> "Why stop at the square root?" Because divisors come in pairs: if <code>n = a &times; b</code> then one of them is at or below &radic;n. Having found none by that point, there are none. Using <code>i * i &lt;= n</code> rather than <code>Math.sqrt(n)</code> also avoids floating-point work in the loop.</p>
-    </div></details>
+    <div class="altwrap"><span class="altlabel">Another way to say it</span><p class="note"><b>Stream one-liner</b>:</p><pre><code class="java">public static boolean isPrime(int n) {
+    return n &gt; 1 &amp;&amp; IntStream.rangeClosed(2, (int) Math.sqrt(n))
+                             .noneMatch(i -&gt; n % i == 0);
+}</code></pre><p class="note"><b>Sieve of Eratosthenes</b> &mdash; if they ask for <em>all</em> primes up to n rather than one check:</p><pre><code class="java">boolean[] composite = new boolean[n + 1];
+
+for (int i = 2; (long) i * i &lt;= n; i++) {
+    if (!composite[i]) {
+        for (int j = i * i; j &lt;= n; j += i) {
+            composite[j] = true;
+        }
+    }
+}</code></pre></div><div class="leadwith"><b>Lead with</b>The loop version with the odd-only optimisation. Then answer the guaranteed follow-up before it lands: &ldquo;I stop at the square root because divisors come in pairs &mdash; if n = a &times; b, one of them is at or below &radic;n.&rdquo;</div></div></details>
   </div>
 
   <div class="drill">
@@ -1890,7 +2013,14 @@ a = a ^ b;</code></pre>
     return result;
 }</code></pre>
       <p class="note"><b>The detail to volunteer:</b> <code>long</code> overflows past <code>20!</code>. For anything larger she'd use <code>BigInteger</code>. Naming the exact limit is the kind of specific that makes an interviewer stop probing.</p>
-    </div></details>
+    <div class="altwrap"><span class="altlabel">Another way to say it</span><p class="note"><b>Recursive</b>:</p><pre><code class="java">public static long factorial(int n) {
+    if (n &lt; 0) throw new IllegalArgumentException("n must be non-negative");
+    return n &lt;= 1 ? 1 : n * factorial(n - 1);
+}</code></pre><p class="note"><b>BigInteger</b> &mdash; the answer to &ldquo;what about 50!&rdquo;:</p><pre><code class="java">public static BigInteger factorial(int n) {
+    return IntStream.rangeClosed(2, n)
+            .mapToObj(BigInteger::valueOf)
+            .reduce(BigInteger.ONE, BigInteger::multiply);
+}</code></pre></div><div class="leadwith"><b>Lead with</b>The loop. Then volunteer the limit unprompted: &ldquo;<code>long</code> overflows past 20!, so beyond that I would use <code>BigInteger</code>.&rdquo; Naming the exact number is what stops them probing further.</div></div></details>
   </div>
 
   <!-- ---- COLLECTIONS ---- -->
@@ -1908,7 +2038,10 @@ List&lt;String&gt; unique = names.stream()
         .distinct()
         .collect(Collectors.toList());</code></pre>
       <p class="note"><b>Follow-up:</b> "What if it's a list of custom objects?" Then <code>distinct()</code> and <code>LinkedHashSet</code> both depend on <code>equals()</code> and <code>hashCode()</code> being overridden on that class. Without them every object is unique and nothing gets removed &mdash; which loops straight back to the equals/hashCode contract in the Java tab.</p>
-    </div></details>
+    <div class="altwrap"><span class="altlabel">Another way to say it</span><p class="note"><b>Dedupe by one field</b>, without touching <code>equals</code>/<code>hashCode</code> &mdash; the realistic version:</p><pre><code class="java">List&lt;User&gt; byEmail = users.stream()
+        .collect(Collectors.collectingAndThen(
+                Collectors.toMap(User::getEmail, u -&gt; u, (a, b) -&gt; a, LinkedHashMap::new),
+                m -&gt; new ArrayList&lt;&gt;(m.values())));</code></pre><p class="note">The merge function <code>(a, b) -&gt; a</code> decides whether you keep the <em>first</em> or the <em>last</em> duplicate &mdash; say which you chose and why.</p></div><div class="leadwith"><b>Lead with</b><code>new ArrayList&lt;&gt;(new LinkedHashSet&lt;&gt;(list))</code> &mdash; one line, order preserved. Then raise the follow-up yourself: &ldquo;for custom objects this depends entirely on <code>equals</code> and <code>hashCode</code>; without them nothing gets removed.&rdquo;</div></div></details>
   </div>
 
   <div class="drill">
@@ -1927,7 +2060,14 @@ List&lt;String&gt; unique = names.stream()
 }</code></pre>
       <div class="say"><b>Say this</b>"The fourth argument is the one that matters. <code>Collectors.toMap</code> returns a <code>HashMap</code> by default, which has no ordering &mdash; so you sort the stream perfectly and then collect it into a structure that immediately discards the order. It's a bug that still <i>looks</i> like working code."</div>
       <p class="note">That observation is worth more than the program. It's a genuine defect she'd catch in someone else's pull request.</p>
-    </div></details>
+    <div class="altwrap"><span class="altlabel">Another way to say it</span><p class="note"><b>Without streams</b> &mdash; usually easier to write on paper, and there is no collector trap to fall into:</p><pre><code class="java">List&lt;Map.Entry&lt;String, Integer&gt;&gt; entries = new ArrayList&lt;&gt;(scores.entrySet());
+entries.sort(Map.Entry.comparingByValue(Comparator.reverseOrder()));
+
+Map&lt;String, Integer&gt; sorted = new LinkedHashMap&lt;&gt;();
+for (Map.Entry&lt;String, Integer&gt; entry : entries) {
+    sorted.put(entry.getKey(), entry.getValue());
+}
+return sorted;</code></pre></div><div class="leadwith"><b>Lead with</b>Whichever you trust under pressure &mdash; but either way, say the <code>LinkedHashMap</code> point out loud. In the stream version it is the fourth argument to <code>toMap</code>; here it is the type you collect into. That observation is worth more than the program itself.</div></div></details>
   </div>
 
   <div class="drill">
